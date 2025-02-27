@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { CustomerService } from "../../services/customer.service";
-import { loadAppData, loadAppDataFail, loadAppDataSuccess, loadCustomerDetails, loadCustomerDetailsFail, loadCustomerDetailsSuccess, searchCustomers, searchCustomersSuccess, searchCustomersFail, deleteCustomer, deleteCustomerSuccess, deleteCustomerFail, createCustomer, createCustomerSuccess, createCustomerFail } from "../actions/customers.actions";
+import { loadAppData, loadAppDataFail, loadAppDataSuccess, loadCustomerDetails, loadCustomerDetailsFail, loadCustomerDetailsSuccess, searchCustomers, searchCustomersSuccess, searchCustomersFail, deleteCustomer, deleteCustomerSuccess, deleteCustomerFail, createCustomer, createCustomerSuccess, createCustomerFail, updateCustomer, updateCustomerSuccess, updateCustomerFail } from "../actions/customers.actions";
 import { catchError, map, exhaustMap, of, mergeMap } from "rxjs";
 import { filter } from 'rxjs/operators';
 import { CustomerModel } from "../../models/customer.model";
@@ -71,6 +71,18 @@ export class AppEffects {
                 this.service.CreateCustomer(action.customer).pipe(
                     map((customer) => createCustomerSuccess({ customer })),
                     catchError((error) => of(createCustomerFail({ error })))
+                )
+            )
+        )
+    );
+
+    updateCustomer$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(updateCustomer),
+            mergeMap(action =>
+                this.service.UpdateCustomer(action.customer).pipe(
+                    map((customer) => updateCustomerSuccess({ customer })),
+                    catchError((error) => of(updateCustomerFail({ error })))
                 )
             )
         )

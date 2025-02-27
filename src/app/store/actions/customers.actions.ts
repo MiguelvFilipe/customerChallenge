@@ -23,6 +23,10 @@ export const CREATE_CUSTOMER = '[Customer] Create Customer';
 export const CREATE_CUSTOMER_SUCCESS = '[Customer] Create Customer Success';
 export const CREATE_CUSTOMER_FAIL = '[Customer] Create Customer Fail';
 
+export const UPDATE_CUSTOMER = '[Customer] Update Customer';
+export const UPDATE_CUSTOMER_SUCCESS = '[Customer] Update Customer Success';
+export const UPDATE_CUSTOMER_FAIL = '[Customer] Update Customer Fail';
+
 // Actions
 export const loadAppData = createAction(LOAD_APP_DATA, props<{ page: number, limit: number }>());
 export const loadAppDataSuccess = createAction(LOAD_APP_DATA_SUCCESS, props<{ customerList: CustomerModel[] }>());
@@ -44,4 +48,8 @@ export const deleteCustomerFail = createAction(DELETE_CUSTOMER_FAIL, props<{ err
 export const createCustomer = createAction(CREATE_CUSTOMER, props<{ customer: Partial<CustomerModel> }>());
 export const createCustomerSuccess = createAction(CREATE_CUSTOMER_SUCCESS, props<{ customer: CustomerModel }>());
 export const createCustomerFail = createAction(CREATE_CUSTOMER_FAIL, props<{ error: any }>());
+
+export const updateCustomer = createAction(UPDATE_CUSTOMER, props<{ customer: Partial<CustomerModel> }>());
+export const updateCustomerSuccess = createAction(UPDATE_CUSTOMER_SUCCESS, props<{ customer: CustomerModel }>());
+export const updateCustomerFail = createAction(UPDATE_CUSTOMER_FAIL, props<{ error: any }>());
 
