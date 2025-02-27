@@ -42,21 +42,24 @@
       (click)="onCustomerClick(customer.id)"
     >
       <h1>{{ customer.firstName }} <span *ngIf="isBirthdayThisMonth(customer.birthDate)">🎂</span></h1>
-      <button (click)="onDeleteCustomer(customer.id)">Delete</button>
-      <button (click)="onEditCustomer(customer.id)">Edit</button>
+      <button (click)="$event.stopPropagation(); onDeleteCustomer(customer.id)">Delete</button>
+      <button (click)="$event.stopPropagation(); onEditCustomer(customer.id)">Edit</button>
     </li>
   </ul>
 </div>
 
+<!-- Edit Customer Form -->
 <div *ngIf="editCustomer">
   <h2>Edit Customer</h2>
   <div>
     <label>First Name:</label>
-    <input type="text" [(ngModel)]="editCustomer.firstName" required />
+    <input type="text" [(ngModel)]="editCustomer.firstName" required [class.invalid]="formErrors.editCustomer.firstName" />
+    <div *ngIf="formErrors.editCustomer.firstName" class="error-message">{{ formErrors.editCustomer.firstName }}</div>
   </div>
   <div>
     <label>Last Name:</label>
-    <input type="text" [(ngModel)]="editCustomer.lastName" required />
+    <input type="text" [(ngModel)]="editCustomer.lastName" required [class.invalid]="formErrors.editCustomer.lastName" />
+    <div *ngIf="formErrors.editCustomer.lastName" class="error-message">{{ formErrors.editCustomer.lastName }}</div>
   </div>
   <div>
     <label>Birth Date:</label>
@@ -64,7 +67,8 @@
   </div>
   <div>
     <label>Email:</label>
-    <input type="email" [(ngModel)]="editCustomer.email" />
+    <input type="email" [(ngModel)]="editCustomer.email" [class.invalid]="formErrors.editCustomer.email" />
+    <div *ngIf="formErrors.editCustomer.email" class="error-message">{{ formErrors.editCustomer.email }}</div>
   </div>
   <div>
     <label>Avatar URL:</label>
@@ -79,15 +83,19 @@
   <button (click)="onUpdateCustomer()">Update Customer</button>
   <button (click)="resetEditCustomerForm()">Cancel</button>
 </div>
+
+<!-- Create Customer Form -->
 <div>
   <h2>Create New Customer</h2>
   <div>
     <label>First Name:</label>
-    <input type="text" [(ngModel)]="newCustomer.firstName" required />
+    <input type="text" [(ngModel)]="newCustomer.firstName" required [class.invalid]="formErrors.newCustomer.firstName" />
+    <div *ngIf="formErrors.newCustomer.firstName" class="error-message">{{ formErrors.newCustomer.firstName }}</div>
   </div>
   <div>
     <label>Last Name:</label>
-    <input type="text" [(ngModel)]="newCustomer.lastName" required />
+    <input type="text" [(ngModel)]="newCustomer.lastName" required [class.invalid]="formErrors.newCustomer.lastName" />
+    <div *ngIf="formErrors.newCustomer.lastName" class="error-message">{{ formErrors.newCustomer.lastName }}</div>
   </div>
   <div>
     <label>Birth Date:</label>
@@ -95,7 +103,8 @@
   </div>
   <div>
     <label>Email:</label>
-    <input type="email" [(ngModel)]="newCustomer.email" />
+    <input type="email" [(ngModel)]="newCustomer.email" [class.invalid]="formErrors.newCustomer.email" />
+    <div *ngIf="formErrors.newCustomer.email" class="error-message">{{ formErrors.newCustomer.email }}</div>
   </div>
   <div>
     <label>Avatar URL:</label>
