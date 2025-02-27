@@ -4,7 +4,8 @@ import { CustomerComponent } from './component/customer-list/customer.component'
 import { CustomerDetailComponent } from './component/customer-detail/customer-detail.component';
 
 const routes: Routes = [
-  { path: "", component: CustomerComponent },
+  { path: "", redirectTo: "/customer", pathMatch: "full" },
+  { path: "customer", component: CustomerComponent },
   { path: "customer/:id", component: CustomerDetailComponent },
 ];
 
