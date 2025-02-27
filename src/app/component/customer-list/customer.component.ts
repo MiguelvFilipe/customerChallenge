@@ -1,11 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { CustomersListModel } from 'src/app/models/customer.model';
+import { CustomersListModel, CustomerModel } from 'src/app/models/customer.model';
 import { Subject, takeUntil } from 'rxjs';
 import { getCustomerList, getLoadingState } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
-import { loadAppData, searchCustomers } from '../../store/actions/customers.actions';
+import { loadAppData, searchCustomers, deleteCustomer, createCustomer } from '../../store/actions/customers.actions';
 
 @Component({
   selector: 'app-customer',
@@ -21,6 +21,16 @@ export class CustomerComponent implements OnInit, OnDestroy {
   limit: number = 10;
   searchQuery: string = '';
   searchType: 'firstName' | 'lastName' = 'firstName';
+  showHasContract: boolean = false;
+  noDataMessage: string | null = null;
+  newCustomer: Partial<CustomerModel> = {
+    firstName: '',
+    lastName: '',
+    birthDate: '',
+    email: '',
+    avatar: '',
+    hasContract: false
+  };
   
   constructor(
     private store: Store,
@@ -29,14 +39,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log(this.customerList);
- 
     this.loadCustomers();
 
     this.store.select(getCustomerList)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
-        this.customerList.customerList = info;
+        this.customerList.customerList = this.filterByContract(info);
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
       });
 
     this.store.select(getLoadingState)
@@ -45,6 +54,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
         this.isLoading = isLoading;
         this.customerList.loading = isLoading;
       });
+
     this.customerService.loading$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(isLoading => {
@@ -87,6 +97,28 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   }
 
+  onShowHasContractChange(): void {
+    this.store.select(getCustomerList)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(info => {
+        this.customerList.customerList = this.filterByContract(info);
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
+      });
+  }
+
+  filterByContract(customerList: CustomerModel[]): CustomerModel[] {
+    if (this.showHasContract) {
+      return customerList.filter(customer => customer.hasContract);
+    }
+    return customerList;
+  }
+
+  isBirthdayThisMonth(birthDate: string): boolean {
+    const currentMonth = new Date().getMonth();
+    const customerBirthMonth = new Date(birthDate).getMonth();
+    return currentMonth === customerBirthMonth;
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
@@ -94,5 +126,32 @@ export class CustomerComponent implements OnInit, OnDestroy {
 
   onCustomerClick(customerId: string): void {
     this.router.navigate(['/customer', customerId]);
+  }
+
+  onDeleteCustomer(customerId: string): void {
+    this.store.dispatch(deleteCustomer({ customerId }));
+  }
+
+  onCreateCustomer(): void {
+    if (this.newCustomer.firstName && this.newCustomer.lastName) {
+      this.store.dispatch(createCustomer({ customer: this.newCustomer }));
+      this.resetNewCustomerForm();
+    }
+  }
+
+  resetNewCustomerForm(): void {
+    this.newCustomer = {
+      firstName: '',
+      lastName: '',
+      birthDate: '',
+      email: '',
+      avatar: '',
+      hasContract: false
+    };
+  }
+
+  refreshData(): void {
+    this.customerService.invalidateCache();
+    this.loadCustomers();
   }
 }

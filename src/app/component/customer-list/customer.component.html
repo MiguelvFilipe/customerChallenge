@@ -4,11 +4,17 @@
   <div>
     <button (click)="onPrevPage()" [disabled]="isLoading || currentPage === 1">Previous</button>
     <button (click)="onNextPage()" [disabled]="isLoading">Next</button>
-      <select [(ngModel)]="limit" (change)="onLimitChange(limit)" [disabled]="isLoading">
-        <option value="2">2</option>
-        <option value="5">5</option>
-        <option value="10">10</option>
-      </select>
+    <select [(ngModel)]="limit" (change)="onLimitChange(limit)" [disabled]="isLoading">
+      <option value="2">2</option>
+      <option value="5">5</option>
+      <option value="10">10</option>
+    </select>
+  </div>
+  <div>
+    <label>
+      <input type="checkbox" [(ngModel)]="showHasContract" (change)="onShowHasContractChange()" />
+      Show Only Customers with Contract
+    </label>
   </div>
   <div>
     <input type="text" [(ngModel)]="searchQuery" placeholder="Search by first or last name" />
@@ -18,12 +24,47 @@
     </select>
     <button (click)="onSearch()" [disabled]="isLoading">Search</button>
   </div>
-  <ul>
+  <div>
+    <button (click)="refreshData()" [disabled]="isLoading">Refresh Data</button>
+  </div>
+  <div *ngIf="noDataMessage">{{ noDataMessage }}</div>
+  <ul *ngIf="!noDataMessage">
     <li
       *ngFor="let customer of customerList.customerList"
       (click)="onCustomerClick(customer.id)"
     >
-      <h1>{{ customer.firstName }}</h1>
+      <h1>{{ customer.firstName }} <span *ngIf="isBirthdayThisMonth(customer.birthDate)">🎂</span></h1>
+      <button (click)="onDeleteCustomer(customer.id)">Delete</button>
     </li>
   </ul>
+  <div>
+    <h2>Create New Customer</h2>
+    <div>
+      <label>First Name:</label>
+      <input type="text" [(ngModel)]="newCustomer.firstName" required />
+    </div>
+    <div>
+      <label>Last Name:</label>
+      <input type="text" [(ngModel)]="newCustomer.lastName" required />
+    </div>
+    <div>
+      <label>Birth Date:</label>
+      <input type="date" [(ngModel)]="newCustomer.birthDate" />
+    </div>
+    <div>
+      <label>Email:</label>
+      <input type="email" [(ngModel)]="newCustomer.email" />
+    </div>
+    <div>
+      <label>Avatar URL:</label>
+      <input type="text" [(ngModel)]="newCustomer.avatar" />
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" [(ngModel)]="newCustomer.hasContract" />
+        Has Contract
+      </label>
+    </div>
+    <button (click)="onCreateCustomer()">Create Customer</button>
+  </div>
 </div>
