@@ -36,4 +36,13 @@ import { HttpClient } from '@angular/common/http';
         finalize(() => this.loadingSubject.next(false))
       );
     }
+
+    GetCustomerById(customerId: string): Observable<CustomerModel | null> {
+        return this.http.get<CustomerModel>(`https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users/${customerId}`).pipe(
+            catchError(error => {
+                this.errorSubject.next('Failed to load customer details');
+                return of(null);
+            })
+        );
+    }
   }
