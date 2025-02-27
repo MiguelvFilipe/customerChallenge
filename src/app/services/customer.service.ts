@@ -82,4 +82,8 @@ import { HttpClient } from '@angular/common/http';
             })
         );
     }
+
+    invalidateCache(): void {
+      this.cache = {};
+    }
   }
