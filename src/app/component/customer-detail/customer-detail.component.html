@@ -1,1 +1,6 @@
-<h1>detaisl</h1>
+<div *ngIf="isLoading">Loading...</div>
+<div *ngIf="errorMessage">{{ errorMessage }}</div>
+<div *ngIf="!isLoading && !errorMessage">
+  <h2>{{ customer?.lastName }}</h2>
+  <p>Last Name: {{ customer?.lastName }}</p>
+</div>
