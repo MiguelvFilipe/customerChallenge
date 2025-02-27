@@ -83,6 +83,16 @@ import { HttpClient } from '@angular/common/http';
         );
     }
 
+    UpdateCustomer(customer: Partial<CustomerModel>): Observable<CustomerModel> {
+        return this.http.put<CustomerModel>(`https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users/${customer.id}`, customer).pipe(
+            tap(() => this.invalidateCache()),
+            catchError(error => {
+                this.errorSubject.next('Failed to update customer');
+                return of({} as CustomerModel); // Return an empty CustomerModel object
+            })
+        );
+    }
+
     invalidateCache(): void {
       this.cache = {};
     }
