@@ -31,6 +31,37 @@
       (click)="onCustomerClick(customer.id)"
     >
       <h1>{{ customer.firstName }}</h1>
+      <button (click)="onDeleteCustomer(customer.id)">Delete</button>
     </li>
   </ul>
+  <div>
+    <h2>Create New Customer</h2>
+    <div>
+      <label>First Name:</label>
+      <input type="text" [(ngModel)]="newCustomer.firstName" required />
+    </div>
+    <div>
+      <label>Last Name:</label>
+      <input type="text" [(ngModel)]="newCustomer.lastName" required />
+    </div>
+    <div>
+      <label>Birth Date:</label>
+      <input type="date" [(ngModel)]="newCustomer.birthDate" />
+    </div>
+    <div>
+      <label>Email:</label>
+      <input type="email" [(ngModel)]="newCustomer.email" />
+    </div>
+    <div>
+      <label>Avatar URL:</label>
+      <input type="text" [(ngModel)]="newCustomer.avatar" />
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" [(ngModel)]="newCustomer.hasContract" />
+        Has Contract
+      </label>
+    </div>
+    <button (click)="onCreateCustomer()">Create Customer</button>
+  </div>
 </div>

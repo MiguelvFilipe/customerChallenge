@@ -5,7 +5,7 @@ import { CustomersListModel, CustomerModel } from 'src/app/models/customer.model
 import { Subject, takeUntil } from 'rxjs';
 import { getCustomerList, getLoadingState } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
-import { loadAppData, searchCustomers } from '../../store/actions/customers.actions';
+import { loadAppData, searchCustomers, deleteCustomer, createCustomer } from '../../store/actions/customers.actions';
 
 @Component({
   selector: 'app-customer',
@@ -23,6 +23,14 @@ export class CustomerComponent implements OnInit, OnDestroy {
   searchType: 'firstName' | 'lastName' = 'firstName';
   showHasContract: boolean = false;
   noDataMessage: string | null = null;
+  newCustomer: Partial<CustomerModel> = {
+    firstName: '',
+    lastName: '',
+    birthDate: '',
+    email: '',
+    avatar: '',
+    hasContract: false
+  };
   
   constructor(
     private store: Store,
@@ -112,5 +120,27 @@ export class CustomerComponent implements OnInit, OnDestroy {
 
   onCustomerClick(customerId: string): void {
     this.router.navigate(['/customer', customerId]);
+  }
+
+  onDeleteCustomer(customerId: string): void {
+    this.store.dispatch(deleteCustomer({ customerId }));
+  }
+
+  onCreateCustomer(): void {
+    if (this.newCustomer.firstName && this.newCustomer.lastName) {
+      this.store.dispatch(createCustomer({ customer: this.newCustomer }));
+      this.resetNewCustomerForm();
+    }
+  }
+
+  resetNewCustomerForm(): void {
+    this.newCustomer = {
+      firstName: '',
+      lastName: '',
+      birthDate: '',
+      email: '',
+      avatar: '',
+      hasContract: false
+    };
   }
 }
