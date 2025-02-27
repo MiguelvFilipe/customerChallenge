@@ -1,19 +1,21 @@
 import { createReducer, on } from "@ngrx/store";
-import { loadAppData, loadAppDataSuccess, loadAppDataFail, setLoadingState} from "../actions/customers.actions";
+import { loadAppData, loadAppDataSuccess, loadAppDataFail, setLoadingState, loadCustomerDetails, loadCustomerDetailsSuccess, loadCustomerDetailsFail } from "../actions/customers.actions";
 import { CustomerModel } from "../../models/customer.model";
 
 export interface AppState {
     customerList: CustomerModel[];
     errorMessage: string;
-    isLoading: boolean; // Add loading state
+    isLoading: boolean; 
     selectedCustomerId: string | null;
+    selectedCustomer: CustomerModel | null;
 }
 
 export const initialState: AppState = {
     customerList: [],
     errorMessage: '',
-    isLoading: false, // Initialize loading state
+    isLoading: false,
     selectedCustomerId: null,
+    selectedCustomer: null,
 };
 
 const _appReducer = createReducer(
@@ -33,6 +35,21 @@ const _appReducer = createReducer(
         isLoading: false
     })),
     on(loadAppDataFail, (state, action) => ({
+        ...state,
+        errorMessage: action.error,
+        isLoading: false
+    })),
+    on(loadCustomerDetails, (state) => ({
+        ...state,
+        isLoading: true,
+        selectedCustomer: null
+    })),
+    on(loadCustomerDetailsSuccess, (state, action) => ({
+        ...state,
+        selectedCustomer: action.customer,
+        isLoading: false
+    })),
+    on(loadCustomerDetailsFail, (state, action) => ({
         ...state,
         errorMessage: action.error,
         isLoading: false

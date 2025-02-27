@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { CustomerService } from "../../services/customer.service";
-import { loadAppData, loadAppDataFail, loadAppDataSuccess } from "../actions/customers.actions";
+import { loadAppData, loadAppDataFail, loadAppDataSuccess, loadCustomerDetails, loadCustomerDetailsFail, loadCustomerDetailsSuccess } from "../actions/customers.actions";
 import { catchError, map, exhaustMap, of, mergeMap } from "rxjs";
-
+import { filter } from 'rxjs/operators';
+import { CustomerModel } from "../../models/customer.model";
 
 @Injectable()
 export class AppEffects {
@@ -21,5 +22,21 @@ export class AppEffects {
         )
     );
 
- 
+    loadCustomerDetails$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(loadCustomerDetails),
+            mergeMap(action =>
+                this.service.GetCustomerById(action.customerId).pipe(
+                    map((customer) => {
+                        if (customer) {
+                            return loadCustomerDetailsSuccess({ customer });
+                        } else {
+                            return loadCustomerDetailsFail({ error: 'Customer not found' });
+                        }
+                    }),
+                    catchError((error) => of(loadCustomerDetailsFail({ error })))
+                )
+            )
+        )
+    );
 }
