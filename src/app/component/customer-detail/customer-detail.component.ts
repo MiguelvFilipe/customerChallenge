@@ -22,7 +22,7 @@ export class CustomerDetailComponent implements OnInit {
     const customerId = this.route.snapshot.paramMap.get('id');
     if (customerId) {
       this.isLoading = true;
-      this.customerService.GetAllCustomers().subscribe(customers => {
+      this.customerService.GetAllCustomers(1, 10).subscribe(customers => {
         this.customer = customers.find(c => c.id === customerId) || null;
         this.isLoading = false;
       }, error => {

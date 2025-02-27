@@ -1,6 +1,15 @@
 <div *ngIf="isLoading">Loading...</div>
 <div *ngIf="errorMessage">{{ errorMessage }}</div>
 <div *ngIf="!isLoading && !errorMessage">
+  <div>
+    <button (click)="onPrevPage()" [disabled]="isLoading || currentPage === 1">Previous</button>
+    <button (click)="onNextPage()" [disabled]="isLoading">Next</button>
+      <select [(ngModel)]="limit" (change)="onLimitChange(limit)" [disabled]="isLoading">
+        <option value="2">2</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+      </select>
+  </div>
   <ul>
     <li
       *ngFor="let customer of customerList.customerList"

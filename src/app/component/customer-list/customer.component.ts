@@ -17,6 +17,8 @@ export class CustomerComponent implements OnInit, OnDestroy {
   isLoading!: boolean;
   errorMessage: string | null = null;
   private unsubscribe$ = new Subject<void>();
+  currentPage: number = 1;
+  limit: number = 10;
   
   constructor(
     private store: Store,
@@ -27,7 +29,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     console.log(this.customerList);
  
-    this.store.dispatch(loadAppData());
+    this.loadCustomers();
 
     this.store.select(getCustomerList)
       .pipe(takeUntil(this.unsubscribe$))
@@ -35,15 +37,12 @@ export class CustomerComponent implements OnInit, OnDestroy {
         this.customerList.customerList = info;
       });
 
-    // Select loading state from store
     this.store.select(getLoadingState)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(isLoading => {
         this.isLoading = isLoading;
-        this.customerList.loading = isLoading; // Update loading state
+        this.customerList.loading = isLoading;
       });
-
-    // Subscribe to loading and error states from CustomerService
     this.customerService.loading$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(isLoading => {
@@ -55,6 +54,27 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .subscribe(errorMessage => {
         this.errorMessage = errorMessage;
       });
+  }
+
+  loadCustomers(): void {
+    this.store.dispatch(loadAppData({ page: this.currentPage, limit: this.limit }));
+  }
+
+  onPrevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadCustomers();
+    }
+  }
+
+  onNextPage(): void {
+    this.currentPage++;
+    this.loadCustomers();
+  }
+
+  onLimitChange(newLimit: number): void {
+    this.limit = newLimit;
+    this.loadCustomers();
   }
 
   ngOnDestroy(): void {
