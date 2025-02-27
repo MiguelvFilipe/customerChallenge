@@ -45,4 +45,23 @@ import { HttpClient } from '@angular/common/http';
             })
         );
     }
+
+    SearchCustomers(query: string, searchType: 'firstName' | 'lastName'): Observable<CustomerModel[]> {
+        const cacheKey = `${searchType}-${query}`;
+        if (this.cache[cacheKey]) {
+            return of(this.cache[cacheKey]);
+        }
+
+        this.loadingSubject.next(true);
+        this.errorSubject.next(null);
+
+        return this.http.get<CustomerModel[]>(`https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users?${searchType}=${query}`).pipe(
+            tap(data => this.cache[cacheKey] = data),
+            catchError(error => {
+                this.errorSubject.next('Failed to search customers');
+                return of([]);
+            }),
+            finalize(() => this.loadingSubject.next(false))
+        );
+    }
   }
