@@ -48,7 +48,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
-        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data' : null;
         this.hasMoreData = info.length >= this.limit;
       });
 
@@ -134,7 +134,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
-        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data' : null;
       });
   }
 
