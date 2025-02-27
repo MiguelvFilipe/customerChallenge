@@ -32,6 +32,8 @@ export class CustomerComponent implements OnInit, OnDestroy {
     hasContract: false
   };
   editCustomer: Partial<CustomerModel> | null = null;
+  isInSearchMode: boolean = false;
+  hasMoreData: boolean = true;
   
   constructor(
     private store: Store,
@@ -47,6 +49,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
         this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
+        this.hasMoreData = info.length >= this.limit;
       });
 
     this.store.select(getLoadingState)
@@ -76,26 +79,54 @@ export class CustomerComponent implements OnInit, OnDestroy {
   onPrevPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadCustomers();
+      if (this.isInSearchMode) {
+        this.performSearch();
+      } else {
+        this.loadCustomers();
+      }
     }
   }
 
   onNextPage(): void {
     this.currentPage++;
-    this.loadCustomers();
+    if (this.isInSearchMode) {
+      this.performSearch();
+    } else {
+      this.loadCustomers();
+    }
   }
 
   onLimitChange(newLimit: number): void {
-    this.limit = newLimit;
-    this.loadCustomers();
+    this.limit = parseInt(newLimit.toString());
+    this.currentPage = 1;
+    if (this.isInSearchMode) {
+      this.onSearch();
+    } else {
+      this.customerService.invalidateCache();
+      this.loadCustomers();
+    }
   }
 
   onSearch(): void {
     if (this.searchQuery.trim()) {
-      this.store.dispatch(searchCustomers({ query: this.searchQuery.trim(), searchType: this.searchType }));
+      if (!this.isInSearchMode) {
+        this.currentPage = 1;
+      }
+      this.isInSearchMode = true;
+      this.performSearch();
     } else {
+      this.isInSearchMode = false;
       this.loadCustomers();
     }
+  }
+
+  performSearch(): void {
+    this.store.dispatch(searchCustomers({ 
+      query: this.searchQuery.trim(), 
+      searchType: this.searchType,
+      page: this.currentPage,
+      limit: this.limit 
+    }));
   }
 
   onShowHasContractChange(): void {
@@ -178,5 +209,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
 
   resetEditCustomerForm(): void {
     this.editCustomer = null;
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.isInSearchMode = false;
+    this.currentPage = 1;
+    this.customerService.invalidateCache();
+    this.loadCustomers();
   }
 }
