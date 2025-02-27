@@ -3,9 +3,9 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CustomersListModel, CustomerModel } from 'src/app/models/customer.model';
 import { Subject, takeUntil } from 'rxjs';
-import { getCustomerList, getLoadingState } from '../../store/selectors/customers.selectors';
+import { getCustomerList, getLoadingState, getSelectedCustomer } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
-import { loadAppData, searchCustomers, deleteCustomer, createCustomer } from '../../store/actions/customers.actions';
+import { loadAppData, searchCustomers, deleteCustomer, createCustomer, loadCustomerDetails, updateCustomer } from '../../store/actions/customers.actions';
 
 @Component({
   selector: 'app-customer',
@@ -31,6 +31,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
     avatar: '',
     hasContract: false
   };
+  editCustomer: Partial<CustomerModel> | null = null;
   
   constructor(
     private store: Store,
@@ -153,5 +154,29 @@ export class CustomerComponent implements OnInit, OnDestroy {
   refreshData(): void {
     this.customerService.invalidateCache();
     this.loadCustomers();
+  }
+
+  onEditCustomer(customerId: string): void {
+    this.store.dispatch(loadCustomerDetails({ customerId }));
+    this.store.select(getSelectedCustomer)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(customer => {
+        if (customer) {
+          this.editCustomer = { ...customer };
+        }
+      });
+  }
+
+  onUpdateCustomer(): void {
+    if (this.editCustomer && this.editCustomer.firstName && this.editCustomer.lastName) {
+      this.store.dispatch(updateCustomer({ customer: this.editCustomer }));
+      this.customerService.invalidateCache();
+      this.loadCustomers();
+      this.editCustomer = null;
+    }
+  }
+
+  resetEditCustomerForm(): void {
+    this.editCustomer = null;
   }
 }

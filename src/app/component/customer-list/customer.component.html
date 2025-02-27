@@ -35,8 +35,40 @@
     >
       <h1>{{ customer.firstName }} <span *ngIf="isBirthdayThisMonth(customer.birthDate)">🎂</span></h1>
       <button (click)="onDeleteCustomer(customer.id)">Delete</button>
+      <button (click)="onEditCustomer(customer.id)">Edit</button>
     </li>
   </ul>
+  <div *ngIf="editCustomer">
+    <h2>Edit Customer</h2>
+    <div>
+      <label>First Name:</label>
+      <input type="text" [(ngModel)]="editCustomer.firstName" required />
+    </div>
+    <div>
+      <label>Last Name:</label>
+      <input type="text" [(ngModel)]="editCustomer.lastName" required />
+    </div>
+    <div>
+      <label>Birth Date:</label>
+      <input type="date" [(ngModel)]="editCustomer.birthDate" />
+    </div>
+    <div>
+      <label>Email:</label>
+      <input type="email" [(ngModel)]="editCustomer.email" />
+    </div>
+    <div>
+      <label>Avatar URL:</label>
+      <input type="text" [(ngModel)]="editCustomer.avatar" />
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" [(ngModel)]="editCustomer.hasContract" />
+        Has Contract
+      </label>
+    </div>
+    <button (click)="onUpdateCustomer()">Update Customer</button>
+    <button (click)="resetEditCustomerForm()">Cancel</button>
+  </div>
   <div>
     <h2>Create New Customer</h2>
     <div>
