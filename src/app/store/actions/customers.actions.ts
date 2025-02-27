@@ -9,7 +9,7 @@ export const SET_LOADING_STATE = '[App] Set Loading State';
 
 
 // Actions
-export const loadAppData = createAction(LOAD_APP_DATA);
+export const loadAppData = createAction(LOAD_APP_DATA, props<{ page: number, limit: number }>());
 export const loadAppDataSuccess = createAction(LOAD_APP_DATA_SUCCESS, props<{ customerList: CustomerModel[] }>());
 export const loadAppDataFail = createAction(LOAD_APP_DATA_FAIL, props<{ error: any }>());
 export const setLoadingState = createAction(SET_LOADING_STATE, props<{ isLoading: boolean }>());

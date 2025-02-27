@@ -12,8 +12,8 @@ export class AppEffects {
     loadAppData$ = createEffect(() =>
         this.actions$.pipe(
             ofType(loadAppData),
-            exhaustMap(() =>
-                this.service.GetAllCustomers().pipe(
+            exhaustMap(action =>
+                this.service.GetAllCustomers(action.page, action.limit).pipe(
                     map((data) => loadAppDataSuccess({ customerList: data })),
                     catchError((error) => of(loadAppDataFail({ error })))
                 )
