@@ -44,7 +44,7 @@ export class AppEffects {
         this.actions$.pipe(
             ofType(searchCustomers),
             mergeMap(action =>
-                this.service.SearchCustomers(action.query, action.searchType).pipe(
+                this.service.SearchCustomers(action.query, action.searchType, action.page, action.limit).pipe(
                     map((customerList) => searchCustomersSuccess({ customerList })),
                     catchError((error) => of(searchCustomersFail({ error })))
                 )

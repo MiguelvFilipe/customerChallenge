@@ -37,7 +37,12 @@ export const loadCustomerDetails = createAction(LOAD_CUSTOMER_DETAILS, props<{ c
 export const loadCustomerDetailsSuccess = createAction(LOAD_CUSTOMER_DETAILS_SUCCESS, props<{ customer: CustomerModel }>());
 export const loadCustomerDetailsFail = createAction(LOAD_CUSTOMER_DETAILS_FAIL, props<{ error: any }>());
 
-export const searchCustomers = createAction(SEARCH_CUSTOMERS, props<{ query: string, searchType: 'firstName' | 'lastName' }>());
+export const searchCustomers = createAction(SEARCH_CUSTOMERS, props<{ 
+  query: string, 
+  searchType: 'firstName' | 'lastName',
+  page: number,
+  limit: number 
+}>());
 export const searchCustomersSuccess = createAction(SEARCH_CUSTOMERS_SUCCESS, props<{ customerList: CustomerModel[] }>());
 export const searchCustomersFail = createAction(SEARCH_CUSTOMERS_FAIL, props<{ error: any }>());
 
