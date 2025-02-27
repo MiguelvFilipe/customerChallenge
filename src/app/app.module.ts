@@ -18,7 +18,7 @@ import { AppEffects } from './store/effects/customers.effects';
   declarations: [
     AppComponent,
     CustomerComponent,
-    CustomerDetailComponent
+    CustomerDetailComponent,
   ],
   imports: [
     BrowserModule,
