@@ -1,7 +1,12 @@
-<div class="container">
-    <div *ngFor="let customer of customerList.customerList">
-      <span>
-        <h1>{{ customer.firstName }} {{ customer.lastName }}</h1>
-      </span>
-    </div>
+<div *ngIf="isLoading">Loading...</div>
+<div *ngIf="errorMessage">{{ errorMessage }}</div>
+<div *ngIf="!isLoading && !errorMessage">
+  <ul>
+    <li
+      *ngFor="let customer of customerList.customerList"
+      (click)="onCustomerClick(customer.id)"
+    >
+      <h1>{{ customer.firstName }}</h1>
+    </li>
+  </ul>
 </div>
