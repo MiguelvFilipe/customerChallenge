@@ -5,7 +5,7 @@ import { CustomersListModel } from 'src/app/models/customer.model';
 import { Subject, takeUntil } from 'rxjs';
 import { getCustomerList, getLoadingState } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
-import { loadAppData } from '../../store/actions/customers.actions';
+import { loadAppData, searchCustomers } from '../../store/actions/customers.actions';
 
 @Component({
   selector: 'app-customer',
@@ -19,6 +19,8 @@ export class CustomerComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
   currentPage: number = 1;
   limit: number = 10;
+  searchQuery: string = '';
+  searchType: 'firstName' | 'lastName' = 'firstName';
   
   constructor(
     private store: Store,
@@ -75,6 +77,14 @@ export class CustomerComponent implements OnInit, OnDestroy {
   onLimitChange(newLimit: number): void {
     this.limit = newLimit;
     this.loadCustomers();
+  }
+
+  onSearch(): void {
+    if (this.searchQuery.trim()) {
+      this.store.dispatch(searchCustomers({ query: this.searchQuery.trim(), searchType: this.searchType }));
+    } else {
+      this.loadCustomers();
+    }
   }
 
   ngOnDestroy(): void {

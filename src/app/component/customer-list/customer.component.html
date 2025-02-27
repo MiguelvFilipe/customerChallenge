@@ -10,6 +10,14 @@
         <option value="10">10</option>
       </select>
   </div>
+  <div>
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by first or last name" />
+    <select [(ngModel)]="searchType">
+      <option value="firstName">First Name</option>
+      <option value="lastName">Last Name</option>
+    </select>
+    <button (click)="onSearch()" [disabled]="isLoading">Search</button>
+  </div>
   <ul>
     <li
       *ngFor="let customer of customerList.customerList"
