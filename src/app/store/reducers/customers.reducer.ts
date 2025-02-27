@@ -1,5 +1,5 @@
 import { createReducer, on } from "@ngrx/store";
-import { loadAppData, loadAppDataSuccess, loadAppDataFail, setLoadingState, loadCustomerDetails, loadCustomerDetailsSuccess, loadCustomerDetailsFail, searchCustomers, searchCustomersSuccess, searchCustomersFail } from "../actions/customers.actions";
+import { loadAppData, loadAppDataSuccess, loadAppDataFail, setLoadingState, loadCustomerDetails, loadCustomerDetailsSuccess, loadCustomerDetailsFail, searchCustomers, searchCustomersSuccess, searchCustomersFail, deleteCustomer, deleteCustomerSuccess, deleteCustomerFail, createCustomer, createCustomerSuccess, createCustomerFail } from "../actions/customers.actions";
 import { CustomerModel } from "../../models/customer.model";
 
 export interface AppState {
@@ -65,6 +65,34 @@ const _appReducer = createReducer(
         isLoading: false
     })),
     on(searchCustomersFail, (state, action) => ({
+        ...state,
+        errorMessage: action.error,
+        isLoading: false
+    })),
+    on(deleteCustomer, (state) => ({
+        ...state,
+        isLoading: true
+    })),
+    on(deleteCustomerSuccess, (state, action) => ({
+        ...state,
+        customerList: state.customerList.filter(customer => customer.id !== action.customerId),
+        isLoading: false
+    })),
+    on(deleteCustomerFail, (state, action) => ({
+        ...state,
+        errorMessage: action.error,
+        isLoading: false
+    })),
+    on(createCustomer, (state) => ({
+        ...state,
+        isLoading: true
+    })),
+    on(createCustomerSuccess, (state, action) => ({
+        ...state,
+        customerList: [...state.customerList, action.customer],
+        isLoading: false
+    })),
+    on(createCustomerFail, (state, action) => ({
         ...state,
         errorMessage: action.error,
         isLoading: false

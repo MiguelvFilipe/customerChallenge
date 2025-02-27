@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { CustomerService } from "../../services/customer.service";
-import { loadAppData, loadAppDataFail, loadAppDataSuccess, loadCustomerDetails, loadCustomerDetailsFail, loadCustomerDetailsSuccess, searchCustomers, searchCustomersSuccess, searchCustomersFail } from "../actions/customers.actions";
+import { loadAppData, loadAppDataFail, loadAppDataSuccess, loadCustomerDetails, loadCustomerDetailsFail, loadCustomerDetailsSuccess, searchCustomers, searchCustomersSuccess, searchCustomersFail, deleteCustomer, deleteCustomerSuccess, deleteCustomerFail, createCustomer, createCustomerSuccess, createCustomerFail } from "../actions/customers.actions";
 import { catchError, map, exhaustMap, of, mergeMap } from "rxjs";
 import { filter } from 'rxjs/operators';
 import { CustomerModel } from "../../models/customer.model";
@@ -47,6 +47,30 @@ export class AppEffects {
                 this.service.SearchCustomers(action.query, action.searchType).pipe(
                     map((customerList) => searchCustomersSuccess({ customerList })),
                     catchError((error) => of(searchCustomersFail({ error })))
+                )
+            )
+        )
+    );
+
+    deleteCustomer$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(deleteCustomer),
+            mergeMap(action =>
+                this.service.DeleteCustomer(action.customerId).pipe(
+                    map(() => deleteCustomerSuccess({ customerId: action.customerId })),
+                    catchError((error) => of(deleteCustomerFail({ error })))
+                )
+            )
+        )
+    );
+
+    createCustomer$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(createCustomer),
+            mergeMap(action =>
+                this.service.CreateCustomer(action.customer).pipe(
+                    map((customer) => createCustomerSuccess({ customer })),
+                    catchError((error) => of(createCustomerFail({ error })))
                 )
             )
         )
