@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { CustomersListModel } from 'src/app/models/customer.model';
+import { CustomersListModel, CustomerModel } from 'src/app/models/customer.model';
 import { Subject, takeUntil } from 'rxjs';
 import { getCustomerList, getLoadingState } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
@@ -21,6 +21,8 @@ export class CustomerComponent implements OnInit, OnDestroy {
   limit: number = 10;
   searchQuery: string = '';
   searchType: 'firstName' | 'lastName' = 'firstName';
+  showHasContract: boolean = false;
+  noDataMessage: string | null = null;
   
   constructor(
     private store: Store,
@@ -29,14 +31,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log(this.customerList);
- 
     this.loadCustomers();
 
     this.store.select(getCustomerList)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
-        this.customerList.customerList = info;
+        this.customerList.customerList = this.filterByContract(info);
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
       });
 
     this.store.select(getLoadingState)
@@ -45,6 +46,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
         this.isLoading = isLoading;
         this.customerList.loading = isLoading;
       });
+
     this.customerService.loading$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(isLoading => {
@@ -85,6 +87,22 @@ export class CustomerComponent implements OnInit, OnDestroy {
     } else {
       this.loadCustomers();
     }
+  }
+
+  onShowHasContractChange(): void {
+    this.store.select(getCustomerList)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(info => {
+        this.customerList.customerList = this.filterByContract(info);
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
+      });
+  }
+
+  filterByContract(customerList: CustomerModel[]): CustomerModel[] {
+    if (this.showHasContract) {
+      return customerList.filter(customer => customer.hasContract);
+    }
+    return customerList;
   }
 
   ngOnDestroy(): void {
