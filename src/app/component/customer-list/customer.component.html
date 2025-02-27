@@ -24,13 +24,16 @@
     </select>
     <button (click)="onSearch()" [disabled]="isLoading">Search</button>
   </div>
+  <div>
+    <button (click)="refreshData()" [disabled]="isLoading">Refresh Data</button>
+  </div>
   <div *ngIf="noDataMessage">{{ noDataMessage }}</div>
   <ul *ngIf="!noDataMessage">
     <li
       *ngFor="let customer of customerList.customerList"
       (click)="onCustomerClick(customer.id)"
     >
-      <h1>{{ customer.firstName }}</h1>
+      <h1>{{ customer.firstName }} <span *ngIf="isBirthdayThisMonth(customer.birthDate)">🎂</span></h1>
       <button (click)="onDeleteCustomer(customer.id)">Delete</button>
     </li>
   </ul>

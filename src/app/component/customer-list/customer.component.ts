@@ -113,6 +113,12 @@ export class CustomerComponent implements OnInit, OnDestroy {
     return customerList;
   }
 
+  isBirthdayThisMonth(birthDate: string): boolean {
+    const currentMonth = new Date().getMonth();
+    const customerBirthMonth = new Date(birthDate).getMonth();
+    return currentMonth === customerBirthMonth;
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
@@ -142,5 +148,10 @@ export class CustomerComponent implements OnInit, OnDestroy {
       avatar: '',
       hasContract: false
     };
+  }
+
+  refreshData(): void {
+    this.customerService.invalidateCache();
+    this.loadCustomers();
   }
 }
