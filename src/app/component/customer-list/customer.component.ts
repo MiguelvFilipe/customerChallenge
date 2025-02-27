@@ -34,6 +34,20 @@ export class CustomerComponent implements OnInit, OnDestroy {
   editCustomer: Partial<CustomerModel> | null = null;
   isInSearchMode: boolean = false;
   hasMoreData: boolean = true;
+
+  // Add form validation properties
+  formErrors = {
+    newCustomer: {
+      firstName: '',
+      lastName: '',
+      email: ''
+    },
+    editCustomer: {
+      firstName: '',
+      lastName: '',
+      email: ''
+    }
+  };
   
   constructor(
     private store: Store,
@@ -164,8 +178,42 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.store.dispatch(deleteCustomer({ customerId }));
   }
 
+  validateForm(formType: 'new' | 'edit'): boolean {
+    let isValid = true;
+    const customer = formType === 'new' ? this.newCustomer : this.editCustomer;
+    const errors = this.formErrors[formType === 'new' ? 'newCustomer' : 'editCustomer'];
+    
+    // Reset all error messages
+    errors.firstName = '';
+    errors.lastName = '';
+    errors.email = '';
+    
+    // First name validation
+    if (!customer?.firstName?.trim()) {
+      errors.firstName = 'First name is required';
+      isValid = false;
+    }
+    
+    // Last name validation
+    if (!customer?.lastName?.trim()) {
+      errors.lastName = 'Last name is required';
+      isValid = false;
+    }
+    
+    // Email validation (if provided)
+    if (customer?.email && customer.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(customer.email)) {
+        errors.email = 'Please enter a valid email address';
+        isValid = false;
+      }
+    }
+    
+    return isValid;
+  }
+
   onCreateCustomer(): void {
-    if (this.newCustomer.firstName && this.newCustomer.lastName) {
+    if (this.validateForm('new')) {
       this.store.dispatch(createCustomer({ customer: this.newCustomer }));
       this.resetNewCustomerForm();
     }
@@ -180,6 +228,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
       avatar: '',
       hasContract: false
     };
+    this.formErrors.newCustomer = { firstName: '', lastName: '', email: '' };
   }
 
   refreshData(): void {
@@ -199,8 +248,8 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   onUpdateCustomer(): void {
-    if (this.editCustomer && this.editCustomer.firstName && this.editCustomer.lastName) {
-      this.store.dispatch(updateCustomer({ customer: this.editCustomer }));
+    if (this.validateForm('edit')) {
+      this.store.dispatch(updateCustomer({ customer: this.editCustomer! }));
       this.customerService.invalidateCache();
       this.loadCustomers();
       this.editCustomer = null;
@@ -209,6 +258,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
 
   resetEditCustomerForm(): void {
     this.editCustomer = null;
+    this.formErrors.editCustomer = { firstName: '', lastName: '', email: '' };
   }
 
   clearSearch(): void {
