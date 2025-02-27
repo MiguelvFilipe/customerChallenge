@@ -46,8 +46,8 @@ import { HttpClient } from '@angular/common/http';
         );
     }
 
-    SearchCustomers(query: string, searchType: 'firstName' | 'lastName'): Observable<CustomerModel[]> {
-        const cacheKey = `${searchType}-${query}`;
+    SearchCustomers(query: string, searchType: 'firstName' | 'lastName', page: number, limit: number): Observable<CustomerModel[]> {
+        const cacheKey = `${searchType}-${query}-${page}-${limit}`;
         if (this.cache[cacheKey]) {
             return of(this.cache[cacheKey]);
         }
@@ -55,7 +55,7 @@ import { HttpClient } from '@angular/common/http';
         this.loadingSubject.next(true);
         this.errorSubject.next(null);
 
-        return this.http.get<CustomerModel[]>(`https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users?${searchType}=${query}`).pipe(
+        return this.http.get<CustomerModel[]>(`https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users?${searchType}=${query}&page=${page}&limit=${limit}`).pipe(
             tap(data => this.cache[cacheKey] = data),
             catchError(error => {
                 this.errorSubject.next('Failed to search customers');
@@ -78,7 +78,7 @@ import { HttpClient } from '@angular/common/http';
         return this.http.post<CustomerModel>('https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users', customer).pipe(
             catchError(error => {
                 this.errorSubject.next('Failed to create customer');
-                return of({} as CustomerModel); // Return an empty CustomerModel object
+                return of({} as CustomerModel);
             })
         );
     }
@@ -88,7 +88,7 @@ import { HttpClient } from '@angular/common/http';
             tap(() => this.invalidateCache()),
             catchError(error => {
                 this.errorSubject.next('Failed to update customer');
-                return of({} as CustomerModel); // Return an empty CustomerModel object
+                return of({} as CustomerModel); 
             })
         );
     }
