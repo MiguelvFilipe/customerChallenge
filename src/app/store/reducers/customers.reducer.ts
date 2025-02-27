@@ -1,5 +1,5 @@
 import { createReducer, on } from "@ngrx/store";
-import { loadAppData, loadAppDataSuccess, loadAppDataFail, setLoadingState, loadCustomerDetails, loadCustomerDetailsSuccess, loadCustomerDetailsFail } from "../actions/customers.actions";
+import { loadAppData, loadAppDataSuccess, loadAppDataFail, setLoadingState, loadCustomerDetails, loadCustomerDetailsSuccess, loadCustomerDetailsFail, searchCustomers, searchCustomersSuccess, searchCustomersFail } from "../actions/customers.actions";
 import { CustomerModel } from "../../models/customer.model";
 
 export interface AppState {
@@ -50,6 +50,21 @@ const _appReducer = createReducer(
         isLoading: false
     })),
     on(loadCustomerDetailsFail, (state, action) => ({
+        ...state,
+        errorMessage: action.error,
+        isLoading: false
+    })),
+    on(searchCustomers, (state) => ({
+        ...state,
+        isLoading: true,
+        customerList: []
+    })),
+    on(searchCustomersSuccess, (state, action) => ({
+        ...state,
+        customerList: action.customerList,
+        isLoading: false
+    })),
+    on(searchCustomersFail, (state, action) => ({
         ...state,
         errorMessage: action.error,
         isLoading: false
