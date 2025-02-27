@@ -7,3 +7,9 @@ export interface CustomerModel {
     avatar: string;
     hasContract: boolean;
   }
+
+export interface CustomersListModel {
+    customerList: CustomerModel[];
+    Errormessage: string;
+    loading: boolean;
+  }
