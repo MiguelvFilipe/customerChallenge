@@ -64,4 +64,22 @@ import { HttpClient } from '@angular/common/http';
             finalize(() => this.loadingSubject.next(false))
         );
     }
+
+    DeleteCustomer(customerId: string): Observable<void> {
+        return this.http.delete<void>(`https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users/${customerId}`).pipe(
+            catchError(error => {
+                this.errorSubject.next('Failed to delete customer');
+                return of();
+            })
+        );
+    }
+
+    CreateCustomer(customer: Partial<CustomerModel>): Observable<CustomerModel> {
+        return this.http.post<CustomerModel>('https://620e9760ec8b2ee28326ae84.mockapi.io/api/1/users', customer).pipe(
+            catchError(error => {
+                this.errorSubject.next('Failed to create customer');
+                return of({} as CustomerModel); // Return an empty CustomerModel object
+            })
+        );
+    }
   }
