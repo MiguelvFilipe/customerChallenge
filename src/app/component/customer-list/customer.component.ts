@@ -3,9 +3,9 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CustomersListModel, CustomerModel } from 'src/app/models/customer.model';
 import { Subject, takeUntil } from 'rxjs';
-import { getCustomerList, getLoadingState } from '../../store/selectors/customers.selectors';
+import { getCustomerList, getLoadingState, getSelectedCustomer } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
-import { loadAppData, searchCustomers, deleteCustomer, createCustomer } from '../../store/actions/customers.actions';
+import { loadAppData, searchCustomers, deleteCustomer, createCustomer, loadCustomerDetails, updateCustomer } from '../../store/actions/customers.actions';
 
 @Component({
   selector: 'app-customer',
@@ -31,6 +31,23 @@ export class CustomerComponent implements OnInit, OnDestroy {
     avatar: '',
     hasContract: false
   };
+  editCustomer: Partial<CustomerModel> | null = null;
+  isInSearchMode: boolean = false;
+  hasMoreData: boolean = true;
+
+  // Add form validation properties
+  formErrors = {
+    newCustomer: {
+      firstName: '',
+      lastName: '',
+      email: ''
+    },
+    editCustomer: {
+      firstName: '',
+      lastName: '',
+      email: ''
+    }
+  };
   
   constructor(
     private store: Store,
@@ -45,7 +62,8 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
-        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data' : null;
+        this.hasMoreData = info.length >= this.limit;
       });
 
     this.store.select(getLoadingState)
@@ -75,26 +93,54 @@ export class CustomerComponent implements OnInit, OnDestroy {
   onPrevPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadCustomers();
+      if (this.isInSearchMode) {
+        this.performSearch();
+      } else {
+        this.loadCustomers();
+      }
     }
   }
 
   onNextPage(): void {
     this.currentPage++;
-    this.loadCustomers();
+    if (this.isInSearchMode) {
+      this.performSearch();
+    } else {
+      this.loadCustomers();
+    }
   }
 
   onLimitChange(newLimit: number): void {
-    this.limit = newLimit;
-    this.loadCustomers();
+    this.limit = parseInt(newLimit.toString());
+    this.currentPage = 1;
+    if (this.isInSearchMode) {
+      this.onSearch();
+    } else {
+      this.customerService.invalidateCache();
+      this.loadCustomers();
+    }
   }
 
   onSearch(): void {
     if (this.searchQuery.trim()) {
-      this.store.dispatch(searchCustomers({ query: this.searchQuery.trim(), searchType: this.searchType }));
+      if (!this.isInSearchMode) {
+        this.currentPage = 1;
+      }
+      this.isInSearchMode = true;
+      this.performSearch();
     } else {
+      this.isInSearchMode = false;
       this.loadCustomers();
     }
+  }
+
+  performSearch(): void {
+    this.store.dispatch(searchCustomers({ 
+      query: this.searchQuery.trim(), 
+      searchType: this.searchType,
+      page: this.currentPage,
+      limit: this.limit 
+    }));
   }
 
   onShowHasContractChange(): void {
@@ -102,7 +148,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
-        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data for hasContract = false' : null;
+        this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data' : null;
       });
   }
 
@@ -132,8 +178,42 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.store.dispatch(deleteCustomer({ customerId }));
   }
 
+  validateForm(formType: 'new' | 'edit'): boolean {
+    let isValid = true;
+    const customer = formType === 'new' ? this.newCustomer : this.editCustomer;
+    const errors = this.formErrors[formType === 'new' ? 'newCustomer' : 'editCustomer'];
+    
+    // Reset all error messages
+    errors.firstName = '';
+    errors.lastName = '';
+    errors.email = '';
+    
+    // First name validation
+    if (!customer?.firstName?.trim()) {
+      errors.firstName = 'First name is required';
+      isValid = false;
+    }
+    
+    // Last name validation
+    if (!customer?.lastName?.trim()) {
+      errors.lastName = 'Last name is required';
+      isValid = false;
+    }
+    
+    // Email validation (if provided)
+    if (customer?.email && customer.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(customer.email)) {
+        errors.email = 'Please enter a valid email address';
+        isValid = false;
+      }
+    }
+    
+    return isValid;
+  }
+
   onCreateCustomer(): void {
-    if (this.newCustomer.firstName && this.newCustomer.lastName) {
+    if (this.validateForm('new')) {
       this.store.dispatch(createCustomer({ customer: this.newCustomer }));
       this.resetNewCustomerForm();
     }
@@ -148,9 +228,43 @@ export class CustomerComponent implements OnInit, OnDestroy {
       avatar: '',
       hasContract: false
     };
+    this.formErrors.newCustomer = { firstName: '', lastName: '', email: '' };
   }
 
   refreshData(): void {
+    this.customerService.invalidateCache();
+    this.loadCustomers();
+  }
+
+  onEditCustomer(customerId: string): void {
+    this.store.dispatch(loadCustomerDetails({ customerId }));
+    this.store.select(getSelectedCustomer)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(customer => {
+        if (customer) {
+          this.editCustomer = { ...customer };
+        }
+      });
+  }
+
+  onUpdateCustomer(): void {
+    if (this.validateForm('edit')) {
+      this.store.dispatch(updateCustomer({ customer: this.editCustomer! }));
+      this.customerService.invalidateCache();
+      this.loadCustomers();
+      this.editCustomer = null;
+    }
+  }
+
+  resetEditCustomerForm(): void {
+    this.editCustomer = null;
+    this.formErrors.editCustomer = { firstName: '', lastName: '', email: '' };
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.isInSearchMode = false;
+    this.currentPage = 1;
     this.customerService.invalidateCache();
     this.loadCustomers();
   }
