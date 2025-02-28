@@ -35,6 +35,9 @@ export class CustomerComponent implements OnInit, OnDestroy {
   isInSearchMode: boolean = false;
   hasMoreData: boolean = true;
   isVisible = false;
+  isEditModalVisible = false;
+  isDeleteModalVisible = false;
+  customerToDeleteId: string | null = null;
 
   // Add form validation properties
   formErrors = {
@@ -176,7 +179,16 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   onDeleteCustomer(customerId: string): void {
-    this.store.dispatch(deleteCustomer({ customerId }));
+    this.customerToDeleteId = customerId;
+    this.isDeleteModalVisible = true;
+  }
+
+  confirmDelete(): void {
+    if (this.customerToDeleteId) {
+      this.store.dispatch(deleteCustomer({ customerId: this.customerToDeleteId }));
+      this.isDeleteModalVisible = false;
+      this.customerToDeleteId = null;
+    }
   }
 
   validateForm(formType: 'new' | 'edit'): boolean {
@@ -248,6 +260,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .subscribe(customer => {
         if (customer) {
           this.editCustomer = { ...customer };
+          this.isEditModalVisible = true;
         }
       });
   }
@@ -278,7 +291,6 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.isVisible = true;
   }
 
-
   handleCreationCancel(): void {
     this.isVisible = false;
     this.newCustomer = {
@@ -290,6 +302,26 @@ export class CustomerComponent implements OnInit, OnDestroy {
       hasContract: false
     };
     this.formErrors.newCustomer = { firstName: '', lastName: '', email: '' }; 
+  }
+
+  handleEditCancel(): void {
+    this.isEditModalVisible = false;
+    this.resetEditCustomerForm();
+  }
+
+  handleEditOk(): void {
+    if (this.validateForm('edit')) {
+      this.store.dispatch(updateCustomer({ customer: this.editCustomer! }));
+      this.customerService.invalidateCache();
+      this.loadCustomers();
+      this.isEditModalVisible = false;
+      this.resetEditCustomerForm();
+    }
+  }
+
+  handleDeleteCancel(): void {
+    this.isDeleteModalVisible = false;
+    this.customerToDeleteId = null;
   }
 
 }

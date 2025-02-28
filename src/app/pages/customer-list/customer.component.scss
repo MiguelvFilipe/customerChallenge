@@ -14,18 +14,11 @@
 } */
 
 
-::ng-deep .create-customer-modal {
+::ng-deep .create-customer-modal, 
+::ng-deep .edit-customer-modal {
   .ant-modal-content {
     border-radius: 8px;
     overflow: hidden;
-  }
-
-  .ant-modal-header {
-    
-  }
-
-  .ant-modal-title {
- 
   }
 
   .ant-modal-body {
@@ -54,6 +47,21 @@
   }
 }
 
+::ng-deep .delete-customer-modal {
+  .ant-modal-content {
+    border-radius: 8px;
+  }
+  
+  .ant-btn-primary {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    
+    &:hover {
+      background-color: #c82333;
+      border-color: #bd2130;
+    }
+  }
+}
 
 
 
