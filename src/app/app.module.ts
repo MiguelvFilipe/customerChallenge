@@ -2,8 +2,8 @@ import { NgModule,isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { CustomerComponent } from './component/customer-list/customer.component';
-import { CustomerDetailComponent } from './component/customer-detail/customer-detail.component';
+import { CustomerComponent } from './pages/customer-list/customer.component';
+import { CustomerDetailComponent } from './pages/customer-detail/customer-detail.component';
 
 
 import { StoreModule } from '@ngrx/store';
@@ -18,6 +18,13 @@ import { NZ_I18N } from 'ng-zorro-antd/i18n';
 import { en_US } from 'ng-zorro-antd/i18n';
 import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
+
+
 
 
 registerLocaleData(en);
@@ -37,6 +44,12 @@ registerLocaleData(en);
     HttpClientModule,
     StoreDevtoolsModule.instrument({ maxAge: false, logOnly: !isDevMode() }),
     EffectsModule.forRoot([AppEffects]),
+    NzDividerModule,
+    NzTableModule,
+    NzButtonModule,
+    NzIconModule,
+    NzInputModule
+    
   ],
   bootstrap: [AppComponent],
   providers: [
