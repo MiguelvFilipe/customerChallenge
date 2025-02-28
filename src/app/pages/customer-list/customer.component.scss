@@ -1,8 +1,13 @@
-.container {
+.main-customer-container{
+  height: 100%;
+}
+
+
+/* .container {
   display: flex;
   flex-direction: column;
 }
-/* NEED TO REMOVE THIS LATER */
+
 .customer-list-container {
   position: relative;
   min-height: 100px;
@@ -78,4 +83,4 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4rem;
-}
+} */

@@ -23,6 +23,8 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 
 
 
@@ -33,6 +35,7 @@ registerLocaleData(en);
     AppComponent,
     CustomerComponent,
     CustomerDetailComponent,
+    NavbarComponent,
   ],
   imports: [
     BrowserModule,
@@ -48,7 +51,8 @@ registerLocaleData(en);
     NzTableModule,
     NzButtonModule,
     NzIconModule,
-    NzInputModule
+    NzInputModule,
+    NzDropDownModule
     
   ],
   bootstrap: [AppComponent],
