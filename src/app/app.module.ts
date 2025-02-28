@@ -25,6 +25,12 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
+
+
+
 
 
 
@@ -52,8 +58,10 @@ registerLocaleData(en);
     NzButtonModule,
     NzIconModule,
     NzInputModule,
-    NzDropDownModule
-    
+    NzDropDownModule,
+    NzModalModule,
+    NzDatePickerModule,
+    NzSwitchModule
   ],
   bootstrap: [AppComponent],
   providers: [

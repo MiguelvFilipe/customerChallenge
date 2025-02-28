@@ -1,9 +1,65 @@
-.main-customer-container{
+/* .main-customer-container{
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  .customer-table-container{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+      .table-container{
+        height: 100%;
+      }
+    
+  }
+} */
+
+
+::ng-deep .create-customer-modal {
+  .ant-modal-content {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .ant-modal-header {
+    
+  }
+
+  .ant-modal-title {
+ 
+  }
+
+  .ant-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    .input-container{
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      .error-message {
+        color: #dc3545;
+        margin-top: 5px;
+        font-size: 0.85rem;
+      }
+      input.invalid {
+        border: 1px solid #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+      }
+    }
+  }
+
+  .ant-modal-footer {
+    display: flex;
+    justify-content: space-between
+  }
 }
 
 
-/* .container {
+
+
+
+/* 
+.container {
   display: flex;
   flex-direction: column;
 }

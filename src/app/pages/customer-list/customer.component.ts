@@ -26,14 +26,15 @@ export class CustomerComponent implements OnInit, OnDestroy {
   newCustomer: Partial<CustomerModel> = {
     firstName: '',
     lastName: '',
-    birthDate: '',
+    birthDate: undefined,
     email: '',
-    avatar: '',
+    avatar: 'https://i.guim.co.uk/img/media/02088fb2247b13df646907d47f552dc69a236bc7/0_93_3235_3304/master/3235.jpg?width=445&dpr=1&s=none&crop=none',
     hasContract: false
   };
   editCustomer: Partial<CustomerModel> | null = null;
   isInSearchMode: boolean = false;
   hasMoreData: boolean = true;
+  isVisible = false;
 
   // Add form validation properties
   formErrors = {
@@ -216,14 +217,18 @@ export class CustomerComponent implements OnInit, OnDestroy {
     if (this.validateForm('new')) {
       this.store.dispatch(createCustomer({ customer: this.newCustomer }));
       this.resetNewCustomerForm();
+      this.isVisible = false;
     }
   }
 
+  onBirthDateChange(date: Date): void {
+    this.newCustomer.birthDate = date ? date.toISOString() : undefined; // Convert to ISO string
+  }
   resetNewCustomerForm(): void {
     this.newCustomer = {
       firstName: '',
       lastName: '',
-      birthDate: '',
+      birthDate: undefined,
       email: '',
       avatar: '',
       hasContract: false
@@ -268,4 +273,23 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.customerService.invalidateCache();
     this.loadCustomers();
   }
+
+  showCreationModal(): void {
+    this.isVisible = true;
+  }
+
+
+  handleCreationCancel(): void {
+    this.isVisible = false;
+    this.newCustomer = {
+      firstName: '',
+      lastName: '',
+      birthDate: undefined,
+      email: '',
+      avatar: '',
+      hasContract: false
+    };
+    this.formErrors.newCustomer = { firstName: '', lastName: '', email: '' }; 
+  }
+
 }

@@ -1,9 +1,102 @@
 <div class="main-customer-container">
   <section>
-    Create Customer
+    <button nz-button [nzType]="'primary'" (click)="showCreationModal()"><span>Create Customer</span></button>
+    <nz-modal 
+    nzClassName="create-customer-modal" 
+    [(nzVisible)]="isVisible" 
+    nzTitle="Create New Customer" 
+    (nzOnCancel)="handleCreationCancel()" 
+    (nzOnOk)="onCreateCustomer()"
+    nzOkText="Create Customer">
+    >
+      <ng-container *nzModalContent>
+          <div class="input-container">
+            <label>First Name</label>
+            <input nz-input placeholder="Customer first name" [(ngModel)]="newCustomer.firstName" type="text" required [class.invalid]="formErrors.newCustomer.firstName" />
+           <!--  <input type="text" [(ngModel)]="newCustomer.firstName" required [class.invalid]="formErrors.newCustomer.firstName" /> -->
+            <div *ngIf="formErrors.newCustomer.firstName" class="error-message">{{ formErrors.newCustomer.firstName }}</div>
+          </div>
+          <div class="input-container">
+            <label>Last Name</label>
+            <input nz-input placeholder="Customer last name" [(ngModel)]="newCustomer.lastName" type="text" required [class.invalid]="formErrors.newCustomer.lastName" />
+          <!--   <input type="text" [(ngModel)]="newCustomer.lastName" required [class.invalid]="formErrors.newCustomer.lastName" /> -->
+            <div *ngIf="formErrors.newCustomer.lastName" class="error-message">{{ formErrors.newCustomer.lastName }}</div>
+          </div>
+          <div class="input-container">
+            <label>Birth Date:</label>
+            <nz-date-picker [(ngModel)]="newCustomer.birthDate" (ngModelChange)="onBirthDateChange($event)"></nz-date-picker>
+          </div>
+          <div class="input-container">
+            <label>Email:</label>
+            <input nz-input placeholder="Email" [(ngModel)]="newCustomer.email" type="email" [class.invalid]="formErrors.newCustomer.email"/>
+            <div *ngIf="formErrors.newCustomer.email" class="error-message">{{ formErrors.newCustomer.email }}</div>
+          </div>
+          <div class="input-container">
+            <label>
+              Has Contract
+              <nz-switch [(ngModel)]="newCustomer.hasContract"></nz-switch>
+            </label>
+          </div>
+       
+      </ng-container>
+    </nz-modal>
   </section>
-  <section>
-    Table list
+  <section class="customer-table-container">
+   
+      <div *ngIf="noDataMessage">{{ noDataMessage }}</div>
+      <nz-table 
+        #customerTable 
+        [nzData]="customerList?.customerList || []" 
+        *ngIf="!noDataMessage"
+        [nzLoading]="isLoading"
+        [nzFrontPagination]="true"
+        [nzShowPagination]="false"
+        [nzShowSizeChanger]="true"
+        [nzPageSizeOptions]="[2, 5, 10]"
+        (nzPageSizeChange)="onLimitChange($event)"
+        class="table-container"
+     
+      >
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Birth Date</th>
+            <th>Contract Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of customerTable.data" (click)="onCustomerClick(customer.id)" style="cursor: pointer;">
+            <td>
+              {{ customer.firstName }} {{ customer.lastName }}
+            <!--   <span *ngIf="isBirthdayThisMonth(customer.birthDate)">🎂</span> -->
+              <span *ngIf="customer.birthDate && isBirthdayThisMonth(customer.birthDate)">🎂</span>
+            </td>
+            <td>{{ customer.email }}</td>
+            <td>{{ customer.birthDate }}</td>
+            <td>{{ customer.hasContract ? 'Active' : 'None' }}</td>
+            <td>
+              <button (click)="$event.stopPropagation(); onEditCustomer(customer.id)">Edit</button>
+              <nz-divider nzType="vertical"></nz-divider>
+              <button (click)="$event.stopPropagation(); onDeleteCustomer(customer.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    
+      
+      <div class="custom-pagination" style="display: flex; justify-content: center; margin-top: 16px;">
+        <button (click)="onPrevPage()" [disabled]="isLoading || currentPage === 1">Previous</button>
+        <span style="margin: 0 10px;">Page {{ currentPage }}</span>
+        <button (click)="onNextPage()" [disabled]="isLoading || !hasMoreData">Next</button>
+        <select [(ngModel)]="limit" (change)="onLimitChange(limit)" [disabled]="isLoading" style="margin-left: 10px;">
+          <option value="2">2</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+    
   </section>
 </div>
 

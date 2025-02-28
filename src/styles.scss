@@ -2,6 +2,10 @@
 
 .main-container{
     background-color: rgb(225, 225, 225);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 body {

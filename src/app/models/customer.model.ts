@@ -3,7 +3,7 @@ export interface CustomerModel {
     firstName: string;
     lastName: string;
     email: string;
-    birthDate: string;
+    birthDate?: string;
     avatar: string;
     hasContract: boolean;
   }
