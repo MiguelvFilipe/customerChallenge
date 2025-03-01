@@ -7,6 +7,7 @@ import { getCustomerList, getLoadingState, getSelectedCustomer } from '../../sto
 import { CustomerService } from '../../services/customer.service';
 import { loadAppData, searchCustomers, deleteCustomer, createCustomer, loadCustomerDetails, updateCustomer } from '../../store/actions/customers.actions';
 import { debounceTime } from 'rxjs/operators';
+
 @Component({
   selector: 'app-customer',
   templateUrl: './customer.component.html',
@@ -54,6 +55,11 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   };
   
+ 
+  private cachedCustomerList: CustomerModel[] = [];
+  private cachedPage: number = 1;
+  private cachedLimit: number = 10;
+  
   constructor(
     private store: Store,
     private customerService: CustomerService,
@@ -67,6 +73,15 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
+        
+        
+        if (!this.isInSearchMode) {
+          this.cachedCustomerList = [...info];
+          this.cachedPage = this.currentPage;
+          this.cachedLimit = this.limit;
+        }
+        
+      
         this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data' : null;
         this.hasMoreData = info.length >= this.limit;
       });
@@ -133,7 +148,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   }
 
-/*   onSearch(): void {
+  onSearch(): void {
     if (this.searchQuery.trim()) {
       if (!this.isInSearchMode) {
         this.currentPage = 1;
@@ -141,25 +156,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
       this.isInSearchMode = true;
       this.performSearch();
     } else {
-      this.isInSearchMode = false;
-      this.loadCustomers();
+      this.clearSearch();
     }
-  } */
-    onSearch(): void {
-      if (this.searchQuery.trim()) {
-        if (!this.isInSearchMode) {
-          this.currentPage = 1;
-        }
-        this.isInSearchMode = true;
-        this.performSearch();
-      } else {
-        this.clearSearch();
-      }
-    }
+  }
 
-    onSearchInputChange(): void {
-      this.searchSubject.next(this.searchQuery);
-    }
+  onSearchInputChange(): void {
+    this.searchSubject.next(this.searchQuery);
+  }
   
 
   performSearch(): void {

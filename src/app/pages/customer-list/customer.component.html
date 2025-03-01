@@ -252,11 +252,9 @@
     </nz-modal>
   </section>
   <section class="customer-table-container">
-    <div *ngIf="noDataMessage">{{ noDataMessage }}</div>
     <nz-table
       #customerTable
       [nzData]="customerList?.customerList || []"
-      *ngIf="!noDataMessage"
       [nzLoading]="isLoading"
       [nzFrontPagination]="true"
       [nzShowPagination]="false"
@@ -265,6 +263,7 @@
       (nzPageSizeChange)="onLimitChange($event)"
       class="table-container"
       [nzScroll]="{ y: '500px' }"
+      [nzNoResult]="noDataTemplate"
     >
       <thead>
         <tr>
@@ -318,6 +317,14 @@
         </tr>
       </tbody>
     </nz-table>
+    
+    <!-- Custom no-data template -->
+    <ng-template #noDataTemplate>
+      <div class="no-data-message">
+        <span nz-icon nzType="inbox" nzTheme="outline" style="font-size: 24px;"></span>
+        <p>{{ noDataMessage || 'No data available' }}</p>
+      </div>
+    </ng-template>
   </section>
 </div>
 
