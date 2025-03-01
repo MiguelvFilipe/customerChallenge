@@ -1,0 +1,178 @@
+.main-actions-container{
+  display: flex;
+  justify-content: space-between;
+  padding: 2rem 0;
+
+  .main-controls-container{
+    display: flex;
+    align-items: center;
+    .search-input-box{
+      .ant-input{
+        padding: 0 1rem;
+      }
+    }
+    .page-control-container{
+      display: flex;
+      flex: none;
+      align-items: center;
+    }
+    .no-contact-filter{
+      display: flex;
+      flex: none;
+    }
+  }
+  
+}
+
+.main-customer-container{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  .customer-table-container{
+  
+     
+  }
+}
+
+
+::ng-deep .create-customer-modal, 
+::ng-deep .edit-customer-modal {
+  .ant-modal-content {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .ant-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    .input-container{
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      .error-message {
+        color: #dc3545;
+        margin-top: 5px;
+        font-size: 0.85rem;
+      }
+      input.invalid {
+        border: 1px solid #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+      }
+    }
+  }
+
+  .ant-modal-footer {
+    display: flex;
+    justify-content: space-between
+  }
+}
+
+::ng-deep .delete-customer-modal {
+  .ant-modal-content {
+    border-radius: 8px;
+  }
+  
+  .ant-btn-primary {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    
+    &:hover {
+      background-color: #c82333;
+      border-color: #bd2130;
+    }
+  }
+}
+
+.highlight-birthday {
+  background-color: rgba(255, 223, 186, 0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  color: #008aa0;
+  border-left: 3px solid #e67e22;
+}
+
+/* 
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-list-container {
+  position: relative;
+  min-height: 100px;
+  border: 1px solid #eee;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  font-weight: bold;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-top: 5px;
+  font-size: 0.85rem;
+}
+
+input.invalid {
+  border: 1px solid #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
+}
+
+button {
+  margin-right: 5px;
+}
+
+.custom-pagination {
+  padding: 8px 0;
+}
+
+.custom-pagination button {
+  padding: 4px 8px;
+  margin: 0 4px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  border-radius: 2px;
+}
+
+.custom-pagination button:disabled {
+  color: rgba(0, 0, 0, 0.25);
+  cursor: not-allowed;
+}
+
+.custom-pagination select {
+  padding: 4px;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+}
+.teste{
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+} */

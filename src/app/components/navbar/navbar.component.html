@@ -1,0 +1,20 @@
+
+
+<nav class="navbar">
+    <section>
+      <h1>Customer List</h1>
+    </section>
+    <section>  
+        <button nz-button nz-dropdown [nzDropdownMenu]="menu2" nzPlacement="bottomRight" nzShape="circle" nzSize="large">
+        <span nz-icon nzType="user" nzTheme="outline"></span>
+      </button>
+    
+      <nz-dropdown-menu #menu2="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item>Profile</li>
+          <li nz-menu-item>Settings</li>
+          <li nz-menu-item>Logout</li>
+        </ul>
+      </nz-dropdown-menu></section>
+
+</nav>

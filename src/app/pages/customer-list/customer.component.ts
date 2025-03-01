@@ -6,17 +6,19 @@ import { Subject, takeUntil } from 'rxjs';
 import { getCustomerList, getLoadingState, getSelectedCustomer } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
 import { loadAppData, searchCustomers, deleteCustomer, createCustomer, loadCustomerDetails, updateCustomer } from '../../store/actions/customers.actions';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-customer',
   templateUrl: './customer.component.html',
-  styleUrls: ['./customer.component.css']
+  styleUrls: ['./customer.component.scss']
 })
 export class CustomerComponent implements OnInit, OnDestroy {
   customerList: CustomersListModel = { customerList: [], Errormessage: '', loading: true }; 
   isLoading!: boolean;
   errorMessage: string | null = null;
   private unsubscribe$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
   currentPage: number = 1;
   limit: number = 10;
   searchQuery: string = '';
@@ -26,16 +28,19 @@ export class CustomerComponent implements OnInit, OnDestroy {
   newCustomer: Partial<CustomerModel> = {
     firstName: '',
     lastName: '',
-    birthDate: '',
+    birthDate: undefined,
     email: '',
-    avatar: '',
+    avatar: 'http://loremflickr.com/cache/resized/defaultImage.small_640_480_nofilter.jpg',
     hasContract: false
   };
   editCustomer: Partial<CustomerModel> | null = null;
   isInSearchMode: boolean = false;
   hasMoreData: boolean = true;
+  isVisible = false;
+  isEditModalVisible = false;
+  isDeleteModalVisible = false;
+  customerToDeleteId: string | null = null;
 
-  // Add form validation properties
   formErrors = {
     newCustomer: {
       firstName: '',
@@ -48,6 +53,15 @@ export class CustomerComponent implements OnInit, OnDestroy {
       email: ''
     }
   };
+  
+ 
+  private cachedCustomerList: CustomerModel[] = [];
+  private cachedPage: number = 1;
+  private cachedLimit: number = 10;
+  isDetailsModalVisible = false;
+  selectedCustomer: CustomerModel | null = null;
+
+  selectedCustomerForDetails: CustomerModel | null = null;
   
   constructor(
     private store: Store,
@@ -62,6 +76,15 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
+        
+        
+        if (!this.isInSearchMode) {
+          this.cachedCustomerList = [...info];
+          this.cachedPage = this.currentPage;
+          this.cachedLimit = this.limit;
+        }
+        
+      
         this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data' : null;
         this.hasMoreData = info.length >= this.limit;
       });
@@ -83,6 +106,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(errorMessage => {
         this.errorMessage = errorMessage;
+      });
+
+      this.searchSubject.pipe(
+        debounceTime(500),
+        takeUntil(this.unsubscribe$)
+      ).subscribe(() => {
+        this.onSearch();
       });
   }
 
@@ -129,10 +159,14 @@ export class CustomerComponent implements OnInit, OnDestroy {
       this.isInSearchMode = true;
       this.performSearch();
     } else {
-      this.isInSearchMode = false;
-      this.loadCustomers();
+      this.clearSearch();
     }
   }
+
+  onSearchInputChange(): void {
+    this.searchSubject.next(this.searchQuery);
+  }
+  
 
   performSearch(): void {
     this.store.dispatch(searchCustomers({ 
@@ -160,6 +194,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   isBirthdayThisMonth(birthDate: string): boolean {
+    if (!birthDate) return false;
     const currentMonth = new Date().getMonth();
     const customerBirthMonth = new Date(birthDate).getMonth();
     return currentMonth === customerBirthMonth;
@@ -171,36 +206,60 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   onCustomerClick(customerId: string): void {
-    this.router.navigate(['/customer', customerId]);
+
+    this.isEditModalVisible = false;
+    this.editCustomer = null;
+    
+
+    this.store.dispatch(loadCustomerDetails({ customerId }));
+    
+
+    const subscription = this.store.select(getSelectedCustomer)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(customer => {
+        if (customer) {
+          this.selectedCustomerForDetails = { ...customer };
+          this.isDetailsModalVisible = true;
+          subscription.unsubscribe(); 
+        }
+      });
   }
 
   onDeleteCustomer(customerId: string): void {
-    this.store.dispatch(deleteCustomer({ customerId }));
+    this.customerToDeleteId = customerId;
+    this.isDeleteModalVisible = true;
+  }
+
+  confirmDelete(): void {
+    if (this.customerToDeleteId) {
+      this.store.dispatch(deleteCustomer({ customerId: this.customerToDeleteId }));
+      this.isDeleteModalVisible = false;
+      this.customerToDeleteId = null;
+    }
   }
 
   validateForm(formType: 'new' | 'edit'): boolean {
     let isValid = true;
     const customer = formType === 'new' ? this.newCustomer : this.editCustomer;
     const errors = this.formErrors[formType === 'new' ? 'newCustomer' : 'editCustomer'];
-    
-    // Reset all error messages
+  
     errors.firstName = '';
     errors.lastName = '';
     errors.email = '';
     
-    // First name validation
+
     if (!customer?.firstName?.trim()) {
       errors.firstName = 'First name is required';
       isValid = false;
     }
     
-    // Last name validation
+
     if (!customer?.lastName?.trim()) {
       errors.lastName = 'Last name is required';
       isValid = false;
     }
     
-    // Email validation (if provided)
+    
     if (customer?.email && customer.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(customer.email)) {
@@ -216,14 +275,18 @@ export class CustomerComponent implements OnInit, OnDestroy {
     if (this.validateForm('new')) {
       this.store.dispatch(createCustomer({ customer: this.newCustomer }));
       this.resetNewCustomerForm();
+      this.isVisible = false;
     }
   }
 
+  onBirthDateChange(date: Date): void {
+    this.newCustomer.birthDate = date ? date.toISOString() : undefined;
+  }
   resetNewCustomerForm(): void {
     this.newCustomer = {
       firstName: '',
       lastName: '',
-      birthDate: '',
+      birthDate: undefined,
       email: '',
       avatar: '',
       hasContract: false
@@ -232,17 +295,24 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   refreshData(): void {
+    this.currentPage = 1;
     this.customerService.invalidateCache();
     this.loadCustomers();
   }
 
   onEditCustomer(customerId: string): void {
+    this.isDetailsModalVisible = false;
+    this.selectedCustomerForDetails = null;
+    
     this.store.dispatch(loadCustomerDetails({ customerId }));
-    this.store.select(getSelectedCustomer)
+  
+    const subscription = this.store.select(getSelectedCustomer)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(customer => {
         if (customer) {
           this.editCustomer = { ...customer };
+          this.isEditModalVisible = true;
+          subscription.unsubscribe(); 
         }
       });
   }
@@ -268,4 +338,74 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.customerService.invalidateCache();
     this.loadCustomers();
   }
+
+  showCreationModal(): void {
+    this.isVisible = true;
+  }
+
+  handleCreationCancel(): void {
+    this.isVisible = false;
+    this.newCustomer = {
+      firstName: '',
+      lastName: '',
+      birthDate: undefined,
+      email: '',
+      avatar: '',
+      hasContract: false
+    };
+    this.formErrors.newCustomer = { firstName: '', lastName: '', email: '' }; 
+  }
+
+  handleEditCancel(): void {
+    this.isEditModalVisible = false;
+    this.resetEditCustomerForm();
+  }
+
+  handleEditOk(): void {
+    if (this.validateForm('edit')) {
+      this.store.dispatch(updateCustomer({ customer: this.editCustomer! }));
+      this.customerService.invalidateCache();
+      this.loadCustomers();
+      this.isEditModalVisible = false;
+      this.resetEditCustomerForm();
+    }
+  }
+
+  handleDeleteCancel(): void {
+    this.isDeleteModalVisible = false;
+    this.customerToDeleteId = null;
+  }
+
+  handleDetailsModalCancel(): void {
+    this.isDetailsModalVisible = false;
+    this.selectedCustomerForDetails = null;
+  }
+
+  editFromDetails(): void {
+    if (this.selectedCustomerForDetails && this.selectedCustomerForDetails.id) {
+      this.isDetailsModalVisible = false;
+      this.editCustomer = { ...this.selectedCustomerForDetails };
+      this.isEditModalVisible = true;
+    }
+  }
+
+  formatBirthdate(birthDate: string | undefined): string {
+    if (!birthDate) return 'N/A';
+    const date = new Date(birthDate);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+
+  getBirthdateClass(birthDate: string | undefined): string {
+    if (!birthDate) return '';
+    return this.isBirthdayThisMonth(birthDate) ? 'highlight-birthday' : '';
+  }
+
+  disableFutureDates = (current: Date): boolean => {
+    return current > new Date();
+  };
+
 }

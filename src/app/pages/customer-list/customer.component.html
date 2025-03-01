@@ -1,0 +1,425 @@
+<div class="main-customer-container">
+  <!--   Table actions -->
+  <section class="main-actions-container">
+    <!-- Create BTN -->
+    <button nz-button [nzType]="'primary'" (click)="showCreationModal()">
+      <span>Create Customer</span>
+    </button>
+
+    <div class="main-controls-container">
+      <!-- Filter By No Contract -->
+      <div class="no-contact-filter">
+        <span> Filter By No Contract</span>
+        <nz-switch
+          [(ngModel)]="showHasContract"
+          (ngModelChange)="onShowHasContractChange()"
+        ></nz-switch>
+      </div>
+      <!-- Icons on search -->
+      <ng-template #suffixIconSearch>
+        <span nz-icon nzType="search"></span>
+        <button 
+          nz-button 
+          nzSize="small"
+          nzDanger 
+          nzShape="circle"
+          (click)="clearSearch()"
+          [disabled]="isLoading || !isInSearchMode"
+          nzTooltipTitle="Clear Search"
+          nz-tooltip
+        >
+          <span
+            nz-icon
+            nzType="delete"
+            nzTheme="fill"
+          ></span>
+        </button>
+      </ng-template>
+      <!-- Search filter -->
+      <nz-input-group [nzSuffix]="suffixIconSearch" class="search-input-box">
+        <nz-select [(ngModel)]="searchType">
+          <nz-option nzValue="firstName" nzLabel="First Name"></nz-option>
+          <nz-option nzValue="lastName" nzLabel="Last Name"></nz-option>
+        </nz-select>
+        <input
+          type="text"
+          nz-input
+          [(ngModel)]="searchQuery"
+          placeholder="input search text"
+          (ngModelChange)="onSearchInputChange()"
+          (keyup.enter)="onSearch()"
+        />
+      </nz-input-group>
+      <!-- Refresh data -->
+      <button
+        nz-button
+        nzType="primary"
+        (click)="refreshData()"
+        [disabled]="isLoading"
+        nzShape="circle"
+        nzTooltipTitle="Refresh Data"
+        nz-tooltip
+      >
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+
+      <div class="page-control-container">
+        <!-- Page controls -->
+        <button
+          nz-button
+          nzType="primary"
+          nzShape="circle"
+          [disabled]="isLoading || currentPage === 1"
+        >
+          <span nz-icon nzType="left" (click)="onPrevPage()"></span>
+        </button>
+        <span style="margin: 0 10px">Page {{ currentPage }}</span>
+        <button
+          nz-button
+          nzType="primary"
+          nzShape="circle"
+          [disabled]="isLoading || !hasMoreData"
+        >
+          <span nz-icon nzType="right" (click)="onNextPage()"></span>
+        </button>
+      </div>
+    </div>
+    <select
+      [(ngModel)]="limit"
+      (change)="onLimitChange(limit)"
+      [disabled]="isLoading"
+      style="margin-left: 10px"
+    >
+      <option value="2">2</option>
+      <option value="5">5</option>
+      <option value="10">10</option>
+    </select>
+  </section>
+  <!--   Table actions -->
+     
+  <!--   Table Container -->
+  <section class="customer-table-container">
+    <nz-table
+      #customerTable
+      [nzData]="customerList?.customerList || []"
+      [nzLoading]="isLoading"
+      [nzFrontPagination]="true"
+      [nzShowPagination]="false"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[2, 5, 10]"
+      (nzPageSizeChange)="onLimitChange($event)"
+      class="table-container"
+      [nzScroll]="{ y: '500px' }"
+      [nzNoResult]="noDataTemplate"
+    >
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Birth Date</th>
+          <th>Contract Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let customer of customerTable.data">
+          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
+            {{ customer.firstName }} {{ customer.lastName }}
+          </td>
+          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
+            {{ customer.email }}
+          </td>
+          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
+            <span [ngClass]="getBirthdateClass(customer.birthDate)">
+              {{ formatBirthdate(customer.birthDate) }}
+              <span
+                *ngIf="
+                  customer.birthDate && isBirthdayThisMonth(customer.birthDate)
+                "
+                >🎂</span
+              >
+            </span>
+          </td>
+          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
+            {{ customer.hasContract ? "Active" : "None" }}
+          </td>
+          <td>
+            <button 
+              nz-button 
+              nzType="primary" 
+              nzShape="circle"
+              nzTooltipTitle="Edit Customer"
+              nz-tooltip
+            >
+              <span
+                nz-icon
+                nzType="edit"
+                (click)="$event.stopPropagation(); onEditCustomer(customer.id)"
+              ></span>
+            </button>
+            <nz-divider nzType="vertical"></nz-divider>
+            <button 
+              nz-button 
+              nzDanger 
+              nzShape="circle"
+              nzTooltipTitle="Delete Customer"
+              nz-tooltip
+            >
+              <span
+                nz-icon
+                nzType="delete"
+                nzTheme="fill"
+                (click)="
+                  $event.stopPropagation(); onDeleteCustomer(customer.id)
+                "
+              ></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <!-- Table No Data Layout -->
+    <ng-template #noDataTemplate>
+      <div class="no-data-message">
+        <span
+          nz-icon
+          nzType="inbox"
+          nzTheme="outline"
+          style="font-size: 24px"
+        ></span>
+        <p>{{ noDataMessage || "No data available" }}</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- Create Customer Modal -->
+  <nz-modal
+    nzClassName="create-customer-modal"
+    [(nzVisible)]="isVisible"
+    nzTitle="Create New Customer"
+    (nzOnCancel)="handleCreationCancel()"
+    (nzOnOk)="onCreateCustomer()"
+    nzOkText="Create Customer"
+  >
+    >
+    <ng-container *nzModalContent>
+      <div class="input-container">
+        <label>First Name</label>
+        <input
+          nz-input
+          placeholder="Customer first name"
+          [(ngModel)]="newCustomer.firstName"
+          type="text"
+          required
+          [class.invalid]="formErrors.newCustomer.firstName"
+        />
+        <div *ngIf="formErrors.newCustomer.firstName" class="error-message">
+          {{ formErrors.newCustomer.firstName }}
+        </div>
+      </div>
+      <div class="input-container">
+        <label>Last Name</label>
+        <input
+          nz-input
+          placeholder="Customer last name"
+          [(ngModel)]="newCustomer.lastName"
+          type="text"
+          required
+          [class.invalid]="formErrors.newCustomer.lastName"
+        />
+        <div *ngIf="formErrors.newCustomer.lastName" class="error-message">
+          {{ formErrors.newCustomer.lastName }}
+        </div>
+      </div>
+      <div class="input-container">
+        <label>Birth Date:</label>
+        <nz-date-picker
+          [(ngModel)]="newCustomer.birthDate"
+          (ngModelChange)="onBirthDateChange($event)"
+          [nzDisabledDate]="disableFutureDates"
+        ></nz-date-picker>
+      </div>
+      <div class="input-container">
+        <label>Email:</label>
+        <input
+          nz-input
+          placeholder="Email"
+          [(ngModel)]="newCustomer.email"
+          type="email"
+          [class.invalid]="formErrors.newCustomer.email"
+        />
+        <div *ngIf="formErrors.newCustomer.email" class="error-message">
+          {{ formErrors.newCustomer.email }}
+        </div>
+      </div>
+      <div class="input-container">
+        <label>
+          Has Contract
+          <nz-switch [(ngModel)]="newCustomer.hasContract"></nz-switch>
+        </label>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Edit Customer Modal -->
+  <nz-modal
+    nzClassName="edit-customer-modal"
+    [(nzVisible)]="isEditModalVisible"
+    nzTitle="Edit Customer"
+    (nzOnCancel)="handleEditCancel()"
+    (nzOnOk)="handleEditOk()"
+    nzOkText="Update Customer"
+  >
+    <ng-container *nzModalContent>
+      <div class="input-container" *ngIf="editCustomer">
+        <label>First Name</label>
+        <input
+          nz-input
+          placeholder="Customer first name"
+          [(ngModel)]="editCustomer.firstName"
+          type="text"
+          required
+          [class.invalid]="formErrors.editCustomer.firstName"
+        />
+        <div *ngIf="formErrors.editCustomer.firstName" class="error-message">
+          {{ formErrors.editCustomer.firstName }}
+        </div>
+      </div>
+      <div class="input-container" *ngIf="editCustomer">
+        <label>Last Name</label>
+        <input
+          nz-input
+          placeholder="Customer last name"
+          [(ngModel)]="editCustomer.lastName"
+          type="text"
+          required
+          [class.invalid]="formErrors.editCustomer.lastName"
+        />
+        <div *ngIf="formErrors.editCustomer.lastName" class="error-message">
+          {{ formErrors.editCustomer.lastName }}
+        </div>
+      </div>
+      <div class="input-container" *ngIf="editCustomer">
+        <label>Birth Date:</label>
+        <nz-date-picker
+          [(ngModel)]="editCustomer.birthDate"
+          [nzDisabledDate]="disableFutureDates"
+        ></nz-date-picker>
+      </div>
+      <div class="input-container" *ngIf="editCustomer">
+        <label>Email:</label>
+        <input
+          nz-input
+          placeholder="Email"
+          [(ngModel)]="editCustomer.email"
+          type="email"
+          [class.invalid]="formErrors.editCustomer.email"
+        />
+        <div *ngIf="formErrors.editCustomer.email" class="error-message">
+          {{ formErrors.editCustomer.email }}
+        </div>
+      </div>
+      <div class="input-container" *ngIf="editCustomer">
+        <label>
+          Has Contract
+          <nz-switch [(ngModel)]="editCustomer.hasContract"></nz-switch>
+        </label>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Delete Confirmation Modal -->
+  <nz-modal
+    nzClassName="delete-customer-modal"
+    [(nzVisible)]="isDeleteModalVisible"
+    nzTitle="Confirm Delete"
+    (nzOnCancel)="handleDeleteCancel()"
+    (nzOnOk)="confirmDelete()"
+    nzOkText="Delete"
+  >
+    <ng-container *nzModalContent>
+      <p>
+        Are you sure you want to delete this customer? This action cannot be
+        undone.
+      </p>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Customer Details Modal -->
+  <nz-modal
+    nzClassName="customer-details-modal"
+    [(nzVisible)]="isDetailsModalVisible"
+    nzTitle="Customer Details"
+    (nzOnCancel)="handleDetailsModalCancel()"
+    [nzFooter]="detailsModalFooter"
+  >
+    <ng-container *nzModalContent>
+      <div
+        class="customer-details-container"
+        *ngIf="selectedCustomerForDetails"
+      >
+        <div class="customer-avatar">
+          <img
+            [src]="
+              selectedCustomerForDetails.avatar || 'assets/default-avatar.png'
+            "
+            alt="Customer avatar"
+          />
+        </div>
+
+        <div class="customer-info">
+          <h2>
+            {{ selectedCustomerForDetails.firstName }}
+            {{ selectedCustomerForDetails.lastName }}
+          </h2>
+
+          <div class="info-group">
+            <label>Email:</label>
+            <span>{{
+              selectedCustomerForDetails.email || "Not provided"
+            }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>Birth Date:</label>
+            <span
+              [ngClass]="
+                getBirthdateClass(selectedCustomerForDetails?.birthDate)
+              "
+            >
+              {{ formatBirthdate(selectedCustomerForDetails?.birthDate) }}
+              <span
+                *ngIf="getBirthdateClass(selectedCustomerForDetails?.birthDate)"
+                >🎂</span
+              >
+            </span>
+          </div>
+
+          <div class="info-group">
+            <label>Contract Status:</label>
+            <span
+              [ngClass]="{
+                'contract-active': selectedCustomerForDetails.hasContract,
+                'contract-inactive': !selectedCustomerForDetails.hasContract
+              }"
+            >
+              {{ selectedCustomerForDetails.hasContract ? "Active" : "None" }}
+            </span>
+          </div>
+
+          <div class="info-group" *ngIf="selectedCustomerForDetails.id">
+            <label>Customer ID:</label>
+            <span>{{ selectedCustomerForDetails.id }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #detailsModalFooter>
+      <button nz-button nzType="default" (click)="handleDetailsModalCancel()">
+        Close
+      </button>
+    </ng-template>
+  </nz-modal>
+</div>
