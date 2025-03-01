@@ -6,7 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { getCustomerList, getLoadingState, getSelectedCustomer } from '../../store/selectors/customers.selectors';
 import { CustomerService } from '../../services/customer.service';
 import { loadAppData, searchCustomers, deleteCustomer, createCustomer, loadCustomerDetails, updateCustomer } from '../../store/actions/customers.actions';
-
+import { debounceTime } from 'rxjs/operators';
 @Component({
   selector: 'app-customer',
   templateUrl: './customer.component.html',
@@ -17,6 +17,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
   isLoading!: boolean;
   errorMessage: string | null = null;
   private unsubscribe$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
   currentPage: number = 1;
   limit: number = 10;
   searchQuery: string = '';
@@ -88,6 +89,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
       .subscribe(errorMessage => {
         this.errorMessage = errorMessage;
       });
+
+      this.searchSubject.pipe(
+        debounceTime(500),
+        takeUntil(this.unsubscribe$)
+      ).subscribe(() => {
+        this.onSearch();
+      });
   }
 
   loadCustomers(): void {
@@ -125,7 +133,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   }
 
-  onSearch(): void {
+/*   onSearch(): void {
     if (this.searchQuery.trim()) {
       if (!this.isInSearchMode) {
         this.currentPage = 1;
@@ -136,7 +144,23 @@ export class CustomerComponent implements OnInit, OnDestroy {
       this.isInSearchMode = false;
       this.loadCustomers();
     }
-  }
+  } */
+    onSearch(): void {
+      if (this.searchQuery.trim()) {
+        if (!this.isInSearchMode) {
+          this.currentPage = 1;
+        }
+        this.isInSearchMode = true;
+        this.performSearch();
+      } else {
+        this.clearSearch();
+      }
+    }
+
+    onSearchInputChange(): void {
+      this.searchSubject.next(this.searchQuery);
+    }
+  
 
   performSearch(): void {
     this.store.dispatch(searchCustomers({ 
