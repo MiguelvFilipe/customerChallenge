@@ -28,6 +28,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 
 
@@ -61,7 +62,8 @@ registerLocaleData(en);
     NzDropDownModule,
     NzModalModule,
     NzDatePickerModule,
-    NzSwitchModule
+    NzSwitchModule,
+    NzSelectModule
   ],
   bootstrap: [AppComponent],
   providers: [

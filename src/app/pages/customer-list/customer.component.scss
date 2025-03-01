@@ -1,17 +1,34 @@
-/* .main-customer-container{
+.main-actions-container{
+  display: flex;
+  justify-content: space-between;
+  padding: 2rem 0;
+
+  .main-controls-container{
+    display: flex;
+    align-items: center;
+    .page-control-container{
+      display: flex;
+      flex: none;
+      align-items: center;
+    }
+    .no-contact-filter{
+      display: flex;
+      flex: none;
+    }
+  }
+  
+}
+
+.main-customer-container{
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: 2rem;
   .customer-table-container{
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-      .table-container{
-        height: 100%;
-      }
     
+     
   }
-} */
+}
 
 
 ::ng-deep .create-customer-modal, 
