@@ -31,12 +31,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
-
-
-
-
-
-
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 registerLocaleData(en);
 @NgModule({
@@ -66,7 +61,8 @@ registerLocaleData(en);
     NzSwitchModule,
     NzSelectModule,
     NzTagModule,
-    NzToolTipModule
+    NzToolTipModule,
+    NzSpinModule
   ],
   bootstrap: [AppComponent],
   providers: [

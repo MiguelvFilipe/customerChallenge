@@ -50,135 +50,94 @@
           (keyup.enter)="onSearch()"
         />
       </nz-input-group>
-      <!-- Refresh data -->
-      <button
-        nz-button
-        nzType="primary"
-        (click)="refreshData()"
-        [disabled]="isLoading"
-        nzShape="circle"
-        nzTooltipTitle="Refresh Data"
-        nz-tooltip
-      >
-        <span nz-icon nzType="reload" nzTheme="outline"></span>
-      </button>
-
-      <div class="page-control-container">
-        <!-- Page controls -->
-        <button
-          nz-button
-          nzType="primary"
-          nzShape="circle"
-          [disabled]="isLoading || currentPage === 1"
-        >
-          <span nz-icon nzType="left" (click)="onPrevPage()"></span>
-        </button>
-        <span style="margin: 0 10px">Page {{ currentPage }}</span>
-        <button
-          nz-button
-          nzType="primary"
-          nzShape="circle"
-          [disabled]="isLoading || !hasMoreData"
-        >
-          <span nz-icon nzType="right" (click)="onNextPage()"></span>
-        </button>
-      </div>
     </div>
-    <select
-      [(ngModel)]="limit"
-      (change)="onLimitChange(limit)"
-      [disabled]="isLoading"
-      style="margin-left: 10px"
-    >
-      <option value="2">2</option>
-      <option value="5">5</option>
-      <option value="10">10</option>
-    </select>
   </section>
   <!--   Table actions -->
      
   <!--   Table Container -->
   <section class="customer-table-container">
-    <nz-table
-      #customerTable
-      [nzData]="customerList?.customerList || []"
-      [nzLoading]="isLoading"
-      [nzFrontPagination]="true"
-      [nzShowPagination]="false"
-      [nzShowSizeChanger]="true"
-      [nzPageSizeOptions]="[2, 5, 10]"
-      (nzPageSizeChange)="onLimitChange($event)"
-      class="table-container"
-      [nzScroll]="{ y: '500px' }"
-      [nzNoResult]="noDataTemplate"
-    >
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Birth Date</th>
-          <th>Contract Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let customer of customerTable.data">
-          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
-            {{ customer.firstName }} {{ customer.lastName }}
-          </td>
-          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
-            {{ customer.email }}
-          </td>
-          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
-            <span [ngClass]="getBirthdateClass(customer.birthDate)">
-              {{ formatBirthdate(customer.birthDate) }}
-              <span
-                *ngIf="
-                  customer.birthDate && isBirthdayThisMonth(customer.birthDate)
-                "
-                >🎂</span
+      <nz-table
+        #customerTable
+        [nzData]="customerList?.customerList || []"
+        [nzLoading]="isLoading"
+        [nzFrontPagination]="true"
+        [nzShowPagination]="false"
+        [nzShowSizeChanger]="true"
+        [nzPageSizeOptions]="[2, 5, 10]"
+        (nzPageSizeChange)="onLimitChange($event)"
+        class="table-container"
+        [nzScroll]="{ x: '800px', y: '500px' }"
+        [nzNoResult]="noDataTemplate"
+      >
+        <thead>
+          <tr>
+            <th nzWidth="22.5%" class="table-head-cell">Name</th>
+            <th nzWidth="22.5%" class="table-head-cell">Email</th>
+            <th nzWidth="22.5%" class="table-head-cell">Birth Date</th>
+            <th nzWidth="22.5%" class="table-head-cell">Contract Status</th>
+            <th nzWidth="10%" [nzRight]="true" class="action-column table-head-cell">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of customerTable.data">
+            <td class="ellipsis-cell" (click)="onCustomerClick(customer.id)" style="cursor: pointer" nzTooltipTitle="{{ customer.firstName }} {{ customer.lastName }}" nz-tooltip>
+              {{ customer.firstName }} {{ customer.lastName }}
+            </td>
+            <td class="ellipsis-cell" (click)="onCustomerClick(customer.id)" style="cursor: pointer" nzTooltipTitle="{{ customer.email }}" nz-tooltip>
+              {{ customer.email }}
+            </td>
+            <td class="ellipsis-cell" (click)="onCustomerClick(customer.id)" style="cursor: pointer">
+              <span [ngClass]="getBirthdateClass(customer.birthDate)" nzTooltipTitle="{{ formatBirthdate(customer.birthDate) }}" nz-tooltip>
+                {{ formatBirthdate(customer.birthDate) }}
+                <span
+                  *ngIf="
+                    customer.birthDate && isBirthdayThisMonth(customer.birthDate)
+                  "
+                  >🎂</span
+                >
+              </span>
+            </td>
+            <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
+              <span [ngClass]="customer.hasContract ? 'contract-active' : 'contract-inactive'">
+                {{ customer.hasContract ? "Active" : "None" }}
+              </span>
+            </td>
+            <td class="action-cell">
+              <button 
+                nz-button 
+                nzType="primary" 
+                nzShape="circle"
+                nzTooltipTitle="Edit Customer"
+                nz-tooltip
               >
-            </span>
-          </td>
-          <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
-            {{ customer.hasContract ? "Active" : "None" }}
-          </td>
-          <td>
-            <button 
-              nz-button 
-              nzType="primary" 
-              nzShape="circle"
-              nzTooltipTitle="Edit Customer"
-              nz-tooltip
-            >
-              <span
-                nz-icon
-                nzType="edit"
-                (click)="$event.stopPropagation(); onEditCustomer(customer.id)"
-              ></span>
-            </button>
-            <nz-divider nzType="vertical"></nz-divider>
-            <button 
-              nz-button 
-              nzDanger 
-              nzShape="circle"
-              nzTooltipTitle="Delete Customer"
-              nz-tooltip
-            >
-              <span
-                nz-icon
-                nzType="delete"
-                nzTheme="fill"
-                (click)="
-                  $event.stopPropagation(); onDeleteCustomer(customer.id)
-                "
-              ></span>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </nz-table>
-
+                <span
+                  nz-icon
+                  nzType="edit"
+                  (click)="$event.stopPropagation(); onEditCustomer(customer.id)"
+                ></span>
+              </button>
+              <button 
+                nz-button 
+                nzDanger 
+                nzShape="circle"
+                nzTooltipTitle="Delete Customer"
+                nz-tooltip
+                style="margin-left: 4px;"
+              >
+                <span
+                  nz-icon
+                  nzType="delete"
+                  nzTheme="fill"
+                  (click)="
+                    $event.stopPropagation(); onDeleteCustomer(customer.id)
+                  "
+                ></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+   
     <!-- Table No Data Layout -->
     <ng-template #noDataTemplate>
       <div class="no-data-message">
@@ -191,7 +150,53 @@
         <p>{{ noDataMessage || "No data available" }}</p>
       </div>
     </ng-template>
+    <div class="table-pagination-action-container">
+      <button
+          nz-button
+          nzType="primary"
+          (click)="refreshData()"
+          [disabled]="isLoading"
+          nzShape="circle"
+          nzTooltipTitle="Refresh Data"
+          nz-tooltip
+        >
+          <span nz-icon nzType="reload" nzTheme="outline"></span>
+        </button>
+  
+        <div class="page-control-container">
+          <!-- Page controls -->
+          <button
+            nz-button
+            nzType="primary"
+            nzShape="circle"
+            [disabled]="isLoading || currentPage === 1"
+          >
+            <span nz-icon nzType="left" (click)="onPrevPage()"></span>
+          </button>
+          <span style="margin: 0 10px">Page {{ currentPage }}</span>
+          <button
+            nz-button
+            nzType="primary"
+            nzShape="circle"
+            [disabled]="isLoading || !hasMoreData"
+          >
+            <span nz-icon nzType="right" (click)="onNextPage()"></span>
+          </button>
+        </div>
+        
+        <select
+          [(ngModel)]="limit"
+          (change)="onLimitChange(limit)"
+          [disabled]="isLoading"
+          style="margin-left: 10px"
+        >
+          <option value="2">2</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+        </select>
+    </div>
   </section>
+
 
   <!-- Create Customer Modal -->
   <nz-modal
@@ -359,7 +364,7 @@
         class="customer-details-container"
         *ngIf="selectedCustomerForDetails"
       >
-        <div class="customer-avatar">
+        <div class="customer-avatar-container">
           <img
             [src]="
               selectedCustomerForDetails.avatar || 'assets/default-avatar.png'
@@ -398,19 +403,17 @@
 
           <div class="info-group">
             <label>Contract Status:</label>
-            <span
+         <!--    <span
               [ngClass]="{
                 'contract-active': selectedCustomerForDetails.hasContract,
                 'contract-inactive': !selectedCustomerForDetails.hasContract
               }"
             >
               {{ selectedCustomerForDetails.hasContract ? "Active" : "None" }}
+            </span> -->
+            <span [ngClass]="selectedCustomerForDetails.hasContract ? 'contract-active' : 'contract-inactive'">
+              {{ selectedCustomerForDetails.hasContract ? "Active" : "None" }}
             </span>
-          </div>
-
-          <div class="info-group" *ngIf="selectedCustomerForDetails.id">
-            <label>Customer ID:</label>
-            <span>{{ selectedCustomerForDetails.id }}</span>
           </div>
         </div>
       </div>
