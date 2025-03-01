@@ -32,6 +32,7 @@
 </section> -->
 
   <section class="main-actions-container">
+    
     <ng-template #suffixIconSearch>
       <span nz-icon nzType="search"></span>
     </ng-template>
@@ -98,6 +99,11 @@
         </button>
       </div>
     </div>
+    <select [(ngModel)]="limit" (change)="onLimitChange(limit)" [disabled]="isLoading" style="margin-left: 10px;">
+      <option value="2">2</option>
+      <option value="5">5</option>
+      <option value="10">10</option>
+    </select>
   </section>
 
   <section>
@@ -146,6 +152,7 @@
           <nz-date-picker
             [(ngModel)]="newCustomer.birthDate"
             (ngModelChange)="onBirthDateChange($event)"
+            [nzDisabledDate]="disableFutureDates"
           ></nz-date-picker>
         </div>
         <div class="input-container">
@@ -210,7 +217,10 @@
         </div>
         <div class="input-container" *ngIf="editCustomer">
           <label>Birth Date:</label>
-          <nz-date-picker [(ngModel)]="editCustomer.birthDate"></nz-date-picker>
+          <nz-date-picker 
+            [(ngModel)]="editCustomer.birthDate" 
+            [nzDisabledDate]="disableFutureDates"
+          ></nz-date-picker>
         </div>
         <div class="input-container" *ngIf="editCustomer">
           <label>Email:</label>
@@ -250,6 +260,69 @@
         </p>
       </ng-container>
     </nz-modal>
+
+    <!-- Customer Details Modal -->
+    <nz-modal
+      nzClassName="customer-details-modal"
+      [(nzVisible)]="isDetailsModalVisible"
+      nzTitle="Customer Details"
+      (nzOnCancel)="handleDetailsModalCancel()"
+      [nzFooter]="detailsModalFooter"
+    >
+      <ng-container *nzModalContent>
+        <div class="customer-details-container" *ngIf="selectedCustomerForDetails">
+          <div class="customer-avatar">
+            <img 
+              [src]="selectedCustomerForDetails.avatar || 'assets/default-avatar.png'" 
+              alt="Customer avatar"
+             
+            />
+          </div>
+          
+          <div class="customer-info">
+            <h2>{{ selectedCustomerForDetails.firstName }} {{ selectedCustomerForDetails.lastName }}
+            </h2>
+            
+            <div class="info-group">
+              <label>Email:</label>
+              <span>{{ selectedCustomerForDetails.email || 'Not provided' }}</span>
+            </div>
+            
+            <div class="info-group">
+              <label>Birth Date:</label>
+              <span [ngClass]="getBirthdateClass(selectedCustomerForDetails?.birthDate)">
+                {{ formatBirthdate(selectedCustomerForDetails?.birthDate) }}
+                <span
+                *ngIf="
+                getBirthdateClass(selectedCustomerForDetails?.birthDate)
+                "
+                >🎂</span
+              >
+              </span>
+            </div>
+            
+            <div class="info-group">
+              <label>Contract Status:</label>
+              <span [ngClass]="{'contract-active': selectedCustomerForDetails.hasContract, 'contract-inactive': !selectedCustomerForDetails.hasContract}">
+                {{ selectedCustomerForDetails.hasContract ? 'Active' : 'None' }}
+              </span>
+            </div>
+            
+            <div class="info-group" *ngIf="selectedCustomerForDetails.id">
+              <label>Customer ID:</label>
+              <span>{{ selectedCustomerForDetails.id }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      
+      <ng-template #detailsModalFooter>
+        <button nz-button nzType="default" (click)="handleDetailsModalCancel()">Close</button>
+       <!--  <button nz-button nzType="primary" (click)="editFromDetails()">
+          <span nz-icon nzType="edit"></span> Edit Customer
+        </button> -->
+      </ng-template>
+    </nz-modal>
   </section>
   <section class="customer-table-container">
     <nz-table
@@ -278,18 +351,20 @@
         <tr *ngFor="let customer of customerTable.data">
           <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
             {{ customer.firstName }} {{ customer.lastName }}
-            <span
-              *ngIf="
-                customer.birthDate && isBirthdayThisMonth(customer.birthDate)
-              "
-              >🎂</span
-            >
           </td>
           <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
             {{ customer.email }}
           </td>
           <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
-            {{ customer.birthDate }}
+            <span [ngClass]="getBirthdateClass(customer.birthDate)">
+              {{ formatBirthdate(customer.birthDate) }}
+              <span
+              *ngIf="
+                customer.birthDate && isBirthdayThisMonth(customer.birthDate)
+              "
+              >🎂</span
+            >
+            </span>
           </td>
           <td (click)="onCustomerClick(customer.id)" style="cursor: pointer">
             {{ customer.hasContract ? "Active" : "None" }}

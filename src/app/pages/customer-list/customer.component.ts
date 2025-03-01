@@ -30,7 +30,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
     lastName: '',
     birthDate: undefined,
     email: '',
-    avatar: 'https://i.guim.co.uk/img/media/02088fb2247b13df646907d47f552dc69a236bc7/0_93_3235_3304/master/3235.jpg?width=445&dpr=1&s=none&crop=none',
+    avatar: 'http://loremflickr.com/cache/resized/defaultImage.small_640_480_nofilter.jpg',
     hasContract: false
   };
   editCustomer: Partial<CustomerModel> | null = null;
@@ -41,7 +41,6 @@ export class CustomerComponent implements OnInit, OnDestroy {
   isDeleteModalVisible = false;
   customerToDeleteId: string | null = null;
 
-  // Add form validation properties
   formErrors = {
     newCustomer: {
       firstName: '',
@@ -59,6 +58,10 @@ export class CustomerComponent implements OnInit, OnDestroy {
   private cachedCustomerList: CustomerModel[] = [];
   private cachedPage: number = 1;
   private cachedLimit: number = 10;
+  isDetailsModalVisible = false;
+  selectedCustomer: CustomerModel | null = null;
+
+  selectedCustomerForDetails: CustomerModel | null = null;
   
   constructor(
     private store: Store,
@@ -191,6 +194,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   isBirthdayThisMonth(birthDate: string): boolean {
+    if (!birthDate) return false;
     const currentMonth = new Date().getMonth();
     const customerBirthMonth = new Date(birthDate).getMonth();
     return currentMonth === customerBirthMonth;
@@ -202,7 +206,23 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   onCustomerClick(customerId: string): void {
-    this.router.navigate(['/customer', customerId]);
+
+    this.isEditModalVisible = false;
+    this.editCustomer = null;
+    
+
+    this.store.dispatch(loadCustomerDetails({ customerId }));
+    
+
+    const subscription = this.store.select(getSelectedCustomer)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(customer => {
+        if (customer) {
+          this.selectedCustomerForDetails = { ...customer };
+          this.isDetailsModalVisible = true;
+          subscription.unsubscribe(); 
+        }
+      });
   }
 
   onDeleteCustomer(customerId: string): void {
@@ -222,25 +242,24 @@ export class CustomerComponent implements OnInit, OnDestroy {
     let isValid = true;
     const customer = formType === 'new' ? this.newCustomer : this.editCustomer;
     const errors = this.formErrors[formType === 'new' ? 'newCustomer' : 'editCustomer'];
-    
-    // Reset all error messages
+  
     errors.firstName = '';
     errors.lastName = '';
     errors.email = '';
     
-    // First name validation
+
     if (!customer?.firstName?.trim()) {
       errors.firstName = 'First name is required';
       isValid = false;
     }
     
-    // Last name validation
+
     if (!customer?.lastName?.trim()) {
       errors.lastName = 'Last name is required';
       isValid = false;
     }
     
-    // Email validation (if provided)
+    
     if (customer?.email && customer.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(customer.email)) {
@@ -261,7 +280,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   onBirthDateChange(date: Date): void {
-    this.newCustomer.birthDate = date ? date.toISOString() : undefined; // Convert to ISO string
+    this.newCustomer.birthDate = date ? date.toISOString() : undefined;
   }
   resetNewCustomerForm(): void {
     this.newCustomer = {
@@ -281,13 +300,18 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   onEditCustomer(customerId: string): void {
+    this.isDetailsModalVisible = false;
+    this.selectedCustomerForDetails = null;
+    
     this.store.dispatch(loadCustomerDetails({ customerId }));
-    this.store.select(getSelectedCustomer)
+  
+    const subscription = this.store.select(getSelectedCustomer)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(customer => {
         if (customer) {
           this.editCustomer = { ...customer };
           this.isEditModalVisible = true;
+          subscription.unsubscribe(); 
         }
       });
   }
@@ -350,5 +374,37 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.isDeleteModalVisible = false;
     this.customerToDeleteId = null;
   }
+
+  handleDetailsModalCancel(): void {
+    this.isDetailsModalVisible = false;
+    this.selectedCustomerForDetails = null;
+  }
+
+  editFromDetails(): void {
+    if (this.selectedCustomerForDetails && this.selectedCustomerForDetails.id) {
+      this.isDetailsModalVisible = false;
+      this.editCustomer = { ...this.selectedCustomerForDetails };
+      this.isEditModalVisible = true;
+    }
+  }
+
+  formatBirthdate(birthDate: string | undefined): string {
+    if (!birthDate) return 'N/A';
+    const date = new Date(birthDate);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+
+  getBirthdateClass(birthDate: string | undefined): string {
+    if (!birthDate) return '';
+    return this.isBirthdayThisMonth(birthDate) ? 'highlight-birthday' : '';
+  }
+
+  disableFutureDates = (current: Date): boolean => {
+    return current > new Date();
+  };
 
 }

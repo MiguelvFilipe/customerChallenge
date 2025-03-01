@@ -3,8 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CustomerComponent } from './pages/customer-list/customer.component';
-import { CustomerDetailComponent } from './pages/customer-detail/customer-detail.component';
-
+/* import { CustomerDetailComponent } from './pages/customer-detail/customer-detail.component';
+ */
 
 import { StoreModule } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -29,6 +29,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 
 
 
@@ -41,7 +42,6 @@ registerLocaleData(en);
   declarations: [
     AppComponent,
     CustomerComponent,
-    CustomerDetailComponent,
     NavbarComponent,
   ],
   imports: [
@@ -63,7 +63,8 @@ registerLocaleData(en);
     NzModalModule,
     NzDatePickerModule,
     NzSwitchModule,
-    NzSelectModule
+    NzSelectModule,
+    NzTagModule
   ],
   bootstrap: [AppComponent],
   providers: [
