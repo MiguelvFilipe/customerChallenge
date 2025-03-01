@@ -4,15 +4,15 @@
   padding: 2rem 0;
   flex-wrap: wrap;
   gap: 1rem;
-
+  align-items: center;
 
   .main-controls-container{
     display: flex;
     align-items: center;
     gap: 1rem;
-
-    
     .search-input-box{
+      border-radius: 10px;
+      padding: 0.5rem;
       .ant-input{
         padding: 0 1rem;
       }

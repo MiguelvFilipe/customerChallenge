@@ -45,7 +45,7 @@
           type="text"
           nz-input
           [(ngModel)]="searchQuery"
-          placeholder="input search text"
+          placeholder="Search"
           (ngModelChange)="onSearchInputChange()"
           (keyup.enter)="onSearch()"
         />
@@ -58,7 +58,7 @@
   <section class="customer-table-container">
       <nz-table
         #customerTable
-        [nzData]="customerList?.customerList || []"
+        [nzData]="customerList.customerList || []"
         [nzLoading]="isLoading"
         [nzFrontPagination]="true"
         [nzShowPagination]="false"
@@ -187,8 +187,7 @@
         <select
           [(ngModel)]="limit"
           (change)="onLimitChange(limit)"
-          [disabled]="isLoading"
-          style="margin-left: 10px"
+          [disabled]="isLoading"    
         >
           <option value="2">2</option>
           <option value="5">5</option>
@@ -390,12 +389,12 @@
             <label>Birth Date:</label>
             <span
               [ngClass]="
-                getBirthdateClass(selectedCustomerForDetails?.birthDate)
+              getBirthdateClass(selectedCustomerForDetails.birthDate)
               "
             >
-              {{ formatBirthdate(selectedCustomerForDetails?.birthDate) }}
+            {{ formatBirthdate(selectedCustomerForDetails.birthDate) }}
               <span
-                *ngIf="getBirthdateClass(selectedCustomerForDetails?.birthDate)"
+                *ngIf="getBirthdateClass(selectedCustomerForDetails.birthDate)"
                 >🎂</span
               >
             </span>

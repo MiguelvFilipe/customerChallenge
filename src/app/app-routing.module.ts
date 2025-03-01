@@ -5,6 +5,7 @@ import { CustomerComponent } from './pages/customer-list/customer.component';
 const routes: Routes = [
   { path: "", redirectTo: "/customer", pathMatch: "full" },
   { path: "customer", component: CustomerComponent },
+  { path: "**", redirectTo: "/customer" }
 ];
 
 @NgModule({
