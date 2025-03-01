@@ -6,6 +6,11 @@
   .main-controls-container{
     display: flex;
     align-items: center;
+    .search-input-box{
+      .ant-input{
+        padding: 0 1rem;
+      }
+    }
     .page-control-container{
       display: flex;
       flex: none;
@@ -25,7 +30,7 @@
   flex-direction: column;
   padding: 2rem;
   .customer-table-container{
-    
+  
      
   }
 }

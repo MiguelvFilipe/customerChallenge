@@ -30,6 +30,7 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 
 
@@ -64,7 +65,8 @@ registerLocaleData(en);
     NzDatePickerModule,
     NzSwitchModule,
     NzSelectModule,
-    NzTagModule
+    NzTagModule,
+    NzToolTipModule
   ],
   bootstrap: [AppComponent],
   providers: [

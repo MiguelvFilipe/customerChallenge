@@ -295,6 +295,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
   }
 
   refreshData(): void {
+    this.currentPage = 1;
     this.customerService.invalidateCache();
     this.loadCustomers();
   }
