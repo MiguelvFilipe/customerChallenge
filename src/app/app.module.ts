@@ -3,21 +3,22 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CustomerComponent } from './pages/customer-list/customer.component';
-/* import { CustomerDetailComponent } from './pages/customer-detail/customer-detail.component';
- */
-
-import { StoreModule } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { StoreDevtoolsModule } from '@ngrx/store-devtools';
-import { appReducer } from './store/reducers/customers.reducer';
 import { HttpClientModule } from '@angular/common/http';
-import { EffectsModule } from "@ngrx/effects";
-import { AppEffects } from './store/effects/customers.effects';
-import { NZ_I18N } from 'ng-zorro-antd/i18n';
-import { en_US } from 'ng-zorro-antd/i18n';
 import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
+
+// NGRX STORE MODULES
+import { StoreModule } from '@ngrx/store';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { EffectsModule } from "@ngrx/effects";
+import { appReducer } from './store/reducers/customers.reducer';
+import { AppEffects } from './store/effects/customers.effects';
+
+// NG-ZORRO UI COMPONENTS
+import { NZ_I18N } from 'ng-zorro-antd/i18n';
+import { en_US } from 'ng-zorro-antd/i18n';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -33,7 +34,9 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 
+
 registerLocaleData(en);
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -41,15 +44,20 @@ registerLocaleData(en);
     NavbarComponent,
   ],
   imports: [
+    // Core Angular modules
     BrowserModule,
     AppRoutingModule,
-    StoreModule.forRoot({ app: appReducer }),
     BrowserAnimationsModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    
+    // NgRx state management
+    StoreModule.forRoot({ app: appReducer }),
     StoreDevtoolsModule.instrument({ maxAge: false, logOnly: !isDevMode() }),
     EffectsModule.forRoot([AppEffects]),
+    
+    // NG-ZORRO UI modules
     NzDividerModule,
     NzTableModule,
     NzButtonModule,

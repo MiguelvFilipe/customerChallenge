@@ -8,6 +8,15 @@ import { CustomerService } from '../../services/customer.service';
 import { loadAppData, searchCustomers, deleteCustomer, createCustomer, loadCustomerDetails, updateCustomer } from '../../store/actions/customers.actions';
 import { debounceTime } from 'rxjs/operators';
 
+/**
+ * Customer Component
+ * 
+ * This component handles the display and management of customers list:
+ * - Listing customers with pagination
+ * - Searching and filtering functionality
+ * - Creating, updating, and deleting customers
+ * - Viewing customer details
+ */
 @Component({
   selector: 'app-customer',
   templateUrl: './customer.component.html',
@@ -15,16 +24,14 @@ import { debounceTime } from 'rxjs/operators';
 })
 export class CustomerComponent implements OnInit, OnDestroy {
   customerList: CustomersListModel = { customerList: [], Errormessage: '', loading: true }; 
+  noDataMessage: string | null = null;
   isLoading!: boolean;
   errorMessage: string | null = null;
-  private unsubscribe$ = new Subject<void>();
-  private searchSubject = new Subject<string>();
   currentPage: number = 1;
   limit: number = 10;
   searchQuery: string = '';
   searchType: 'firstName' | 'lastName' = 'firstName';
   showHasContract: boolean = false;
-  noDataMessage: string | null = null;
   newCustomer: Partial<CustomerModel> = {
     firstName: '',
     lastName: '',
@@ -36,11 +43,17 @@ export class CustomerComponent implements OnInit, OnDestroy {
   editCustomer: Partial<CustomerModel> | null = null;
   isInSearchMode: boolean = false;
   hasMoreData: boolean = true;
+  customerToDeleteId: string | null = null;
+  selectedCustomer: CustomerModel | null = null;
+  selectedCustomerForDetails: CustomerModel | null = null;
+
+  //Modal Visibility States
+  isDetailsModalVisible = false;
   isVisible = false;
   isEditModalVisible = false;
   isDeleteModalVisible = false;
-  customerToDeleteId: string | null = null;
 
+  //Forms Validation
   formErrors = {
     newCustomer: {
       firstName: '',
@@ -53,16 +66,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
       email: ''
     }
   };
-  
- 
+
+  private unsubscribe$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
   private cachedCustomerList: CustomerModel[] = [];
   private cachedPage: number = 1;
   private cachedLimit: number = 10;
-  isDetailsModalVisible = false;
-  selectedCustomer: CustomerModel | null = null;
 
-  selectedCustomerForDetails: CustomerModel | null = null;
-  
   constructor(
     private store: Store,
     private customerService: CustomerService,
@@ -72,11 +82,11 @@ export class CustomerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadCustomers();
 
+    // Subscribe to customer list updates from the store
     this.store.select(getCustomerList)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(info => {
         this.customerList.customerList = this.filterByContract(info);
-        
         
         if (!this.isInSearchMode) {
           this.cachedCustomerList = [...info];
@@ -84,11 +94,11 @@ export class CustomerComponent implements OnInit, OnDestroy {
           this.cachedLimit = this.limit;
         }
         
-      
         this.noDataMessage = this.customerList.customerList.length === 0 ? 'No data' : null;
         this.hasMoreData = info.length >= this.limit;
       });
 
+    // Subscribe to loading state updates
     this.store.select(getLoadingState)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(isLoading => {
@@ -102,24 +112,34 @@ export class CustomerComponent implements OnInit, OnDestroy {
         this.isLoading = isLoading;
       });
 
+    // Subscribe to error messages
     this.customerService.error$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(errorMessage => {
         this.errorMessage = errorMessage;
       });
 
-      this.searchSubject.pipe(
-        debounceTime(500),
-        takeUntil(this.unsubscribe$)
-      ).subscribe(() => {
-        this.onSearch();
-      });
+    // Set up debounced search
+    this.searchSubject.pipe(
+      debounceTime(500),
+      takeUntil(this.unsubscribe$)
+    ).subscribe(() => {
+      this.onSearch();
+    });
   }
 
+  //clen subscriptions when the component is destroyed
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
+  //Loads customer data from the API
   loadCustomers(): void {
     this.store.dispatch(loadAppData({ page: this.currentPage, limit: this.limit }));
   }
 
+  // Navigate to the previous and next page
   onPrevPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -140,6 +160,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   }
 
+  //Limit the number of items displayed on the page
   onLimitChange(newLimit: number): void {
     this.limit = parseInt(newLimit.toString());
     this.currentPage = 1;
@@ -151,6 +172,14 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   }
 
+  //refresh the data
+  refreshData(): void {
+    this.currentPage = 1;
+    this.customerService.invalidateCache();
+    this.loadCustomers();
+  }
+
+  // search operations
   onSearch(): void {
     if (this.searchQuery.trim()) {
       if (!this.isInSearchMode) {
@@ -163,11 +192,12 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   }
 
+  //search for customers when the search input changes + debounce
   onSearchInputChange(): void {
     this.searchSubject.next(this.searchQuery);
   }
-  
 
+  //search for customers
   performSearch(): void {
     this.store.dispatch(searchCustomers({ 
       query: this.searchQuery.trim(), 
@@ -177,6 +207,16 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }));
   }
 
+  //clear the search query
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.isInSearchMode = false;
+    this.currentPage = 1;
+    this.customerService.invalidateCache();
+    this.loadCustomers();
+  }
+
+  //show customers with contracts
   onShowHasContractChange(): void {
     this.store.select(getCustomerList)
       .pipe(takeUntil(this.unsubscribe$))
@@ -186,6 +226,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
       });
   }
 
+  //filter customers with contracts
   filterByContract(customerList: CustomerModel[]): CustomerModel[] {
     if (this.showHasContract) {
       return customerList.filter(customer => customer.hasContract);
@@ -193,27 +234,13 @@ export class CustomerComponent implements OnInit, OnDestroy {
     return customerList;
   }
 
-  isBirthdayThisMonth(birthDate: string): boolean {
-    if (!birthDate) return false;
-    const currentMonth = new Date().getMonth();
-    const customerBirthMonth = new Date(birthDate).getMonth();
-    return currentMonth === customerBirthMonth;
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-  }
-
+  //Customer Detail Modal
   onCustomerClick(customerId: string): void {
-
     this.isEditModalVisible = false;
     this.editCustomer = null;
     
-
     this.store.dispatch(loadCustomerDetails({ customerId }));
     
-
     const subscription = this.store.select(getSelectedCustomer)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(customer => {
@@ -224,51 +251,15 @@ export class CustomerComponent implements OnInit, OnDestroy {
         }
       });
   }
-
-  onDeleteCustomer(customerId: string): void {
-    this.customerToDeleteId = customerId;
-    this.isDeleteModalVisible = true;
+  handleDetailsModalCancel(): void {
+    this.isDetailsModalVisible = false;
+    this.selectedCustomerForDetails = null;
   }
 
-  confirmDelete(): void {
-    if (this.customerToDeleteId) {
-      this.store.dispatch(deleteCustomer({ customerId: this.customerToDeleteId }));
-      this.isDeleteModalVisible = false;
-      this.customerToDeleteId = null;
-    }
-  }
 
-  validateForm(formType: 'new' | 'edit'): boolean {
-    let isValid = true;
-    const customer = formType === 'new' ? this.newCustomer : this.editCustomer;
-    const errors = this.formErrors[formType === 'new' ? 'newCustomer' : 'editCustomer'];
-  
-    errors.firstName = '';
-    errors.lastName = '';
-    errors.email = '';
-    
-
-    if (!customer?.firstName?.trim()) {
-      errors.firstName = 'First name is required';
-      isValid = false;
-    }
-    
-
-    if (!customer?.lastName?.trim()) {
-      errors.lastName = 'Last name is required';
-      isValid = false;
-    }
-    
-    
-    if (customer?.email && customer.email.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(customer.email)) {
-        errors.email = 'Please enter a valid email address';
-        isValid = false;
-      }
-    }
-    
-    return isValid;
+  //Customer Creation Modal
+  showCreationModal(): void {
+    this.isVisible = true;
   }
 
   onCreateCustomer(): void {
@@ -279,9 +270,11 @@ export class CustomerComponent implements OnInit, OnDestroy {
     }
   }
 
-  onBirthDateChange(date: Date): void {
-    this.newCustomer.birthDate = date ? date.toISOString() : undefined;
+  handleCreationCancel(): void {
+    this.isVisible = false;
+    this.resetNewCustomerForm();
   }
+
   resetNewCustomerForm(): void {
     this.newCustomer = {
       firstName: '',
@@ -294,12 +287,7 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.formErrors.newCustomer = { firstName: '', lastName: '', email: '' };
   }
 
-  refreshData(): void {
-    this.currentPage = 1;
-    this.customerService.invalidateCache();
-    this.loadCustomers();
-  }
-
+  //Customer Edit Modal
   onEditCustomer(customerId: string): void {
     this.isDetailsModalVisible = false;
     this.selectedCustomerForDetails = null;
@@ -322,38 +310,9 @@ export class CustomerComponent implements OnInit, OnDestroy {
       this.store.dispatch(updateCustomer({ customer: this.editCustomer! }));
       this.customerService.invalidateCache();
       this.loadCustomers();
-      this.editCustomer = null;
+      this.isEditModalVisible = false;
+      this.resetEditCustomerForm();
     }
-  }
-
-  resetEditCustomerForm(): void {
-    this.editCustomer = null;
-    this.formErrors.editCustomer = { firstName: '', lastName: '', email: '' };
-  }
-
-  clearSearch(): void {
-    this.searchQuery = '';
-    this.isInSearchMode = false;
-    this.currentPage = 1;
-    this.customerService.invalidateCache();
-    this.loadCustomers();
-  }
-
-  showCreationModal(): void {
-    this.isVisible = true;
-  }
-
-  handleCreationCancel(): void {
-    this.isVisible = false;
-    this.newCustomer = {
-      firstName: '',
-      lastName: '',
-      birthDate: undefined,
-      email: '',
-      avatar: '',
-      hasContract: false
-    };
-    this.formErrors.newCustomer = { firstName: '', lastName: '', email: '' }; 
   }
 
   handleEditCancel(): void {
@@ -361,33 +320,70 @@ export class CustomerComponent implements OnInit, OnDestroy {
     this.resetEditCustomerForm();
   }
 
-  handleEditOk(): void {
-    if (this.validateForm('edit')) {
-      this.store.dispatch(updateCustomer({ customer: this.editCustomer! }));
-      this.customerService.invalidateCache();
-      this.loadCustomers();
-      this.isEditModalVisible = false;
-      this.resetEditCustomerForm();
-    }
+  resetEditCustomerForm(): void {
+    this.editCustomer = null;
+    this.formErrors.editCustomer = { firstName: '', lastName: '', email: '' };
   }
 
+  //Customer Deletion Modal
+  onDeleteCustomer(customerId: string): void {
+    this.customerToDeleteId = customerId;
+    this.isDeleteModalVisible = true;
+  }
+  confirmDelete(): void {
+    if (this.customerToDeleteId) {
+      this.store.dispatch(deleteCustomer({ customerId: this.customerToDeleteId }));
+      this.isDeleteModalVisible = false;
+      this.customerToDeleteId = null;
+    }
+  }
   handleDeleteCancel(): void {
     this.isDeleteModalVisible = false;
     this.customerToDeleteId = null;
   }
 
-  handleDetailsModalCancel(): void {
-    this.isDetailsModalVisible = false;
-    this.selectedCustomerForDetails = null;
+  //Form Validation
+  validateForm(formType: 'new' | 'edit'): boolean {
+    let isValid = true;
+    const customer = formType === 'new' ? this.newCustomer : this.editCustomer;
+    const errors = this.formErrors[formType === 'new' ? 'newCustomer' : 'editCustomer'];
+  
+    errors.firstName = '';
+    errors.lastName = '';
+    errors.email = '';
+    
+    // Validate first name
+    if (!customer?.firstName?.trim()) {
+      errors.firstName = 'First name is required';
+      isValid = false;
+    }
+    
+    // Validate last name
+    if (!customer?.lastName?.trim()) {
+      errors.lastName = 'Last name is required';
+      isValid = false;
+    }
+    
+    // Validate email format if provided
+    if (customer?.email && customer.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(customer.email)) {
+        errors.email = 'Please enter a valid email address';
+        isValid = false;
+      }
+    }
+    
+    return isValid;
   }
 
-  editFromDetails(): void {
-    if (this.selectedCustomerForDetails && this.selectedCustomerForDetails.id) {
-      this.isDetailsModalVisible = false;
-      this.editCustomer = { ...this.selectedCustomerForDetails };
-      this.isEditModalVisible = true;
-    }
+
+  onBirthDateChange(date: Date): void {
+    this.newCustomer.birthDate = date ? date.toISOString() : undefined;
   }
+
+  disableFutureDates = (current: Date): boolean => {
+    return current > new Date();
+  };
 
   formatBirthdate(birthDate: string | undefined): string {
     if (!birthDate) return 'N/A';
@@ -399,13 +395,15 @@ export class CustomerComponent implements OnInit, OnDestroy {
     });
   }
 
+  //CHeck if the customer has a birthday this month
+  isBirthdayThisMonth(birthDate: string): boolean {
+    if (!birthDate) return false;
+    const currentMonth = new Date().getMonth();
+    const customerBirthMonth = new Date(birthDate).getMonth();
+    return currentMonth === customerBirthMonth;
+  }
   getBirthdateClass(birthDate: string | undefined): string {
     if (!birthDate) return '';
     return this.isBirthdayThisMonth(birthDate) ? 'highlight-birthday' : '';
   }
-
-  disableFutureDates = (current: Date): boolean => {
-    return current > new Date();
-  };
-
 }
