@@ -20,8 +20,9 @@ ng test
 
 ## Process and Approach
 
-### Dependencies
-The project relies on Angular, NgRx for state management, and NG-ZORRO for UI components.
+### Dependencies and Prerequisites
+The project relies on Angular CLI 16.0.5, NgRx for state management, and NG-ZORRO for UI components. Also need NodeJS.
+
 
 ### Time Prioritization
 First, I had to gather resources and learn Angular, which was quite a journey. I followed YouTube tutorials, read the documentation, experimented with templates, broke things, and, of course, turned to my friend ChatGPT for help.
