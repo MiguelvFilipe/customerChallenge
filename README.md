@@ -25,9 +25,9 @@ The project relies on Angular CLI 16.0.5, NgRx for state management, and NG-ZORR
 
 
 ### Time Prioritization
-First, I had to gather resources and learn Angular, which was quite a journey. I followed YouTube tutorials, read the documentation, experimented with templates, broke things, and, of course, turned to my friend ChatGPT for help.
+First, I had to gather resources and learn Angular, which was quite a journey. I followed YouTube tutorials, read the documentation, experimented with templates, broke things and, of course, turned to my friend ChatGPT for help.
 
-When starting the project, I prioritized implementing core features to ensure the application was functional and met the primary requirements. Once the core functionality was in place, I shifted my focus to additional features and optimizations. The next step was establishing a structured styling approach and for last i made sure to write some unit tests to cover key features of the application.
+When starting the project, I prioritized implementing core features to ensure the application was functional and met the primary requirements. Once the core functionality was in place, I shifted my focus to additional features and optimizations. The next step was establishing a structured styling approach and the last step, I made sure to write some unit tests to cover key features of the application.
 
 ### Decision Points and Assumptions
 - **State Management:** I chose NgRx for state management to handle complex state interactions and ensure a scalable architecture.
